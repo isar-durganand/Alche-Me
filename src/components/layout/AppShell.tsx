@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Home, 
+  Compass, 
   Atom, 
   FlaskConical, 
   Settings as SettingsIcon, 
@@ -15,12 +16,15 @@ import {
   Search,
   ExternalLink,
   ChevronRight,
-  HelpCircle
+  User,
+  Award
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
+import { progressAdapter, PlayerProfile } from '../../infrastructure/persistence/progressAdapter';
+import { ProfileModal } from '../../features/profile/ProfileModal';
 
-export type NavRoute = 'hub' | 'periodic-table' | 'virtual-lab' | 'settings';
+export type NavRoute = 'hub' | 'worlds' | 'periodic-table' | 'virtual-lab' | 'settings';
 
 export interface AppShellProps {
   currentRoute: NavRoute;
@@ -35,6 +39,14 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isHighContrast, setIsHighContrast] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profile, setProfile] = useState<PlayerProfile>(progressAdapter.getPlayerProfile());
+
+  useEffect(() => {
+    return progressAdapter.subscribe(() => {
+      setProfile(progressAdapter.getPlayerProfile());
+    });
+  }, []);
 
   const toggleHighContrast = () => {
     setIsHighContrast(!isHighContrast);
@@ -53,10 +65,16 @@ export const AppShell: React.FC<AppShellProps> = ({
       badge: 'v0.1',
     },
     {
+      id: 'worlds' as NavRoute,
+      label: 'Adventure Worlds',
+      icon: <Compass className="w-4 h-4" />,
+      badge: '6 Realms',
+    },
+    {
       id: 'periodic-table' as NavRoute,
       label: 'Periodic Table',
       icon: <Atom className="w-4 h-4" />,
-      badge: '118 Elements',
+      badge: 'Elements',
     },
     {
       id: 'virtual-lab' as NavRoute,
@@ -154,29 +172,39 @@ export const AppShell: React.FC<AppShellProps> = ({
             </div>
             <div className="px-3 py-2 rounded-lg border border-[var(--cq-border)]/50 bg-[var(--cq-surface-raised)]/50 text-[11px] text-[var(--cq-text-muted)] space-y-1.5">
               <div className="flex items-center justify-between">
-                <span>Adventure Worlds</span>
-                <Badge size="sm" variant="neutral">Phase 03</Badge>
-              </div>
-              <div className="flex items-center justify-between">
                 <span>Molecule Studio</span>
                 <Badge size="sm" variant="neutral">Phase 08</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span>Quests & Lessons</span>
-                <Badge size="sm" variant="neutral">Phase 06</Badge>
+                <span>Domain Engine</span>
+                <Badge size="sm" variant="neutral">Phase 05</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Cloud Sync</span>
+                <Badge size="sm" variant="neutral">Phase 04</Badge>
               </div>
             </div>
           </nav>
 
           {/* Sidebar Footer Info */}
           <div className="p-4 border-t border-[var(--cq-border)] space-y-2 text-xs">
-            <div className="flex items-center justify-between text-[11px] text-[var(--cq-text-muted)]">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[var(--cq-success)] animate-pulse" />
-                Local Session
-              </span>
-              <span className="font-mono text-[10px]">MRIIRS 4.5CH</span>
-            </div>
+            <button
+              onClick={() => setShowProfileModal(true)}
+              className="w-full p-2.5 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] hover:border-[var(--cq-accent)] transition-colors flex items-center justify-between cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-[var(--cq-accent-subtle)] text-[var(--cq-accent)] font-bold text-xs flex items-center justify-center">
+                  {profile.level}
+                </div>
+                <div className="text-left">
+                  <span className="font-semibold text-xs block text-[var(--cq-text)] truncate max-w-[100px]">
+                    {profile.displayName}
+                  </span>
+                  <span className="text-[10px] text-[var(--cq-accent)] font-mono">{profile.xp} XP</span>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[var(--cq-text-muted)]" />
+            </button>
           </div>
         </aside>
 
@@ -202,7 +230,19 @@ export const AppShell: React.FC<AppShellProps> = ({
             </div>
 
             {/* Top Bar Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
+              {/* Profile XP Pill */}
+              <button
+                type="button"
+                onClick={() => setShowProfileModal(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] hover:border-[var(--cq-accent)] transition-colors text-xs cursor-pointer"
+                title="View Scholar Profile & Quests"
+              >
+                <Award className="w-3.5 h-3.5 text-[var(--cq-accent)]" />
+                <span className="font-semibold text-[var(--cq-text)]">Lvl {profile.level}</span>
+                <span className="text-[10px] font-mono text-[var(--cq-accent)]">{profile.xp} XP</span>
+              </button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -214,10 +254,6 @@ export const AppShell: React.FC<AppShellProps> = ({
                 {isHighContrast ? <Sun className="w-4 h-4 text-[var(--cq-warning)]" /> : <Moon className="w-4 h-4" />}
                 <span className="hidden sm:inline">{isHighContrast ? 'Standard' : 'Contrast'}</span>
               </Button>
-
-              <Badge variant="success" size="sm" dot className="hidden lg:inline-flex">
-                Scientific Integrity Mode
-              </Badge>
             </div>
           </header>
 
@@ -282,20 +318,28 @@ export const AppShell: React.FC<AppShellProps> = ({
               key={item.id}
               onClick={() => handleNavClick(item.id)}
               aria-label={item.label}
-              className={`flex flex-col items-center justify-center gap-1 w-16 h-12 rounded-lg transition-colors cursor-pointer ${
+              className={`flex flex-col items-center justify-center gap-1 w-14 h-12 rounded-lg transition-colors cursor-pointer ${
                 isActive
                   ? 'text-[var(--cq-accent)] font-semibold'
                   : 'text-[var(--cq-text-muted)] hover:text-[var(--cq-text)]'
               }`}
             >
               {item.icon}
-              <span className="text-[10px] tracking-tight truncate max-w-full">
+              <span className="text-[9px] tracking-tight truncate max-w-full">
                 {item.label.split(' ')[0]}
               </span>
             </button>
           );
         })}
       </nav>
+
+      {/* Profile & Achievements Modal */}
+      {showProfileModal && (
+        <ProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+        />
+      )}
     </div>
   );
 };

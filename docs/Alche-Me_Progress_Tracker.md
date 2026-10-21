@@ -3,7 +3,7 @@
 Update this file at the end of every phase. Do not mark work complete without verification.
 
 ## Current project status
-- Current phase: 02 — Design system and responsive shell (COMPLETED)
+- Current phase: 03 — Core game UI and progression (COMPLETED)
 - Status: Production Ready & Verified
 - Product name: Alche-Me
 - Existing project name/path: Alche-Me (`C:\Users\durganand\Desktop\Alche-Me`)
@@ -11,13 +11,13 @@ Update this file at the end of every phase. Do not mark work complete without ve
 - Baseline app command: `npm run dev` (starts Vite dev server at port 5174)
 - Baseline test command: `npm test` (`vitest run`)
 - Baseline build command: `npm run build` (`tsc -b && vite build`)
-- Last verified commit/backup: Working tree clean, Phase 02 tests passing
+- Last verified commit/backup: Phase 03 verified, 15 tests passing
 - Known failures: None. Zero build errors, zero test failures.
 
 ## Phase checklist
 - [x] Phase 01 — Repository audit and foundation
 - [x] Phase 02 — Design system and responsive shell
-- [ ] Phase 03 — Core game UI and progression
+- [x] Phase 03 — Core game UI and progression
 - [ ] Phase 04 — Accounts and persistence
 - [ ] Phase 05 — Chemistry domain engine
 - [ ] Phase 06 — Learning, quizzes and quests
@@ -183,3 +183,65 @@ Update this file at the end of every phase. Do not mark work complete without ve
 
 - **Next recommended phase:**
   - **Phase 03 — Core game UI and progression** (`Phase-03-Core-Game-UI.md`).
+
+---
+
+### Phase 03 — Core Game UI & Progression Loop
+- **Date:** October 2026
+- **Summary of implementation:**
+  - Designed and implemented a local-first progression adapter in `src/infrastructure/persistence/progressAdapter.ts` supporting `localStorage` with in-memory fallback for testing/Node environments.
+  - Implemented deterministic XP calculation and player rank levels (100 XP per level), achievement unlocking (`first-experiment`, `scholar-level-2`), score persistence, attempt tracking, and reactive change subscriptions.
+  - Established typed curriculum models in `src/data/curriculumData.ts`:
+    - 6 curriculum worlds matching Master Spec Section 6 (`discovery-academy`, `atomic-frontier`, `bonding-worlds`, `reaction-forge`, `analytical-district`, `materials-frontier`).
+    - Sequenced levels with prerequisites, difficulty tiers, time estimates, theory summaries, and curated concept assessment items.
+  - Created study quests and achievement definitions in `src/data/questsData.ts`.
+  - Built interactive progression screens and modals:
+    - `WorldMapScreen`: Displays all 6 worlds with completion percentages, mission counts, and lock rules.
+    - `WorldOverviewScreen`: Interactive level sequence with status badges (`available`, `completed`, `mastered`, `locked`) and prerequisite enforcement.
+    - `MissionBriefingModal`: Mission context, learning sequence checklist, and XP reward display.
+    - `ActivityPlayerModal`: Multi-step lesson theory reader, interactive assessment quiz with option selection, and instant pedagogical solution breakdown with explanations for every choice.
+    - `ProfileModal`: Live scholar level progress bar, streak count, completed activity list, and earned achievement badges.
+  - Connected the complete loop into `AppShell` and `App.tsx` with live player XP chip and navigation routes.
+  - Added automated progression test suite in `tests/progression.test.ts` (7 tests).
+
+- **Files added/changed:**
+  - `src/infrastructure/persistence/progressAdapter.ts` (New)
+  - `src/data/curriculumData.ts` (New)
+  - `src/data/questsData.ts` (New)
+  - `src/features/worlds/WorldMapScreen.tsx` (New)
+  - `src/features/worlds/WorldOverviewScreen.tsx` (New)
+  - `src/features/progression/MissionBriefingModal.tsx` (New)
+  - `src/features/progression/ActivityPlayerModal.tsx` (New)
+  - `src/features/profile/ProfileModal.tsx` (New)
+  - `src/features/hub/HubScreen.tsx` (Updated - connects next mission and live profile ledger)
+  - `src/components/layout/AppShell.tsx` (Updated - includes `worlds` route and top bar player badge)
+  - `src/App.tsx` (Updated - renders WorldMapScreen and WorldOverviewScreen)
+  - `tests/progression.test.ts` (New - 7 tests)
+  - `docs/Alche-Me_Progress_Tracker.md` (Updated)
+
+- **Commands run and exit status:**
+  - `npm test` (`vitest run`) — Exit code: 0 (15 passed across 3 test suites in 2.15s)
+  - `npm run build` (`tsc -b && vite build`) — Exit code: 0 (Built in 2.78s, 0 errors)
+
+- **Tests added and results:**
+  - `tests/progression.test.ts`:
+    - `should initialize player profile with baseline values` — PASSED
+    - `should award deterministic XP and calculate player level on activity completion` — PASSED
+    - `should distinguish completed vs mastered based on the 90% threshold` — PASSED
+    - `should retain best score and increment attempts on repeated attempts` — PASSED
+    - `should have 6 structured curriculum worlds matching the Master Specification` — PASSED
+    - `should have valid levels and curated question sets in Discovery Academy and Atomic Frontier` — PASSED
+    - `should define active study quests and unlockable achievements` — PASSED
+  - Total across all suites: 15 passed, 0 failed.
+
+- **Screens/devices checked:**
+  - Progression Loop: Navigated from Hub to World Map, opened Discovery Academy, launched Mission 1 briefing, reviewed theory, solved quiz questions, and observed instant score breakdown, +100 XP award, and level advancement to Level 2.
+  - Prerequisite Enforcement: Verified that Level 2 ("Metric Foundation") was locked until Level 1 was completed, and unlocked immediately upon Level 1 completion.
+  - Storage Persistence: Reloaded browser state and verified XP, level, and completed records survive intact.
+  - Responsive layouts: Verified level cards, briefing modals, and quiz option tap targets on desktop and mobile viewports.
+
+- **Known limitations and technical debt:**
+  - Phase 03 completes the local progression loop, world map, and assessment player with local-first persistence. Multi-device cloud sync, conflict resolution, and authentication adapters belong to Phase 04 (Accounts and Persistence).
+
+- **Next recommended phase:**
+  - **Phase 04 — Accounts and persistence** (`Phase-04-Accounts-and-Saves.md`).
