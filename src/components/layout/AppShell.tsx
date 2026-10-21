@@ -26,7 +26,7 @@ import { progressAdapter, PlayerProfile } from '../../infrastructure/persistence
 import { soundEngine } from '../../infrastructure/audio/soundEngine';
 import { ProfileModal } from '../../features/profile/ProfileModal';
 
-export type NavRoute = 'hub' | 'worlds' | 'periodic-table' | 'virtual-lab' | 'settings';
+export type NavRoute = 'hub' | 'worlds' | 'periodic-table' | 'virtual-lab' | 'molecule-studio' | 'settings';
 
 export interface AppShellProps {
   currentRoute: NavRoute;
@@ -79,6 +79,12 @@ export const AppShell: React.FC<AppShellProps> = ({
       badge: '118 Elements',
     },
     {
+      id: 'molecule-studio' as NavRoute,
+      label: '3D Molecule Studio',
+      icon: <Layers className="w-4 h-4 shrink-0" />,
+      badge: '3D Builder',
+    },
+    {
       id: 'virtual-lab' as NavRoute,
       label: 'Virtual Laboratory',
       icon: <FlaskConical className="w-4 h-4 shrink-0" />,
@@ -101,9 +107,6 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#0B1F2A] flex flex-col font-sans select-none relative">
-      {/* Ambient Animated Chemistry Particle Canvas */}
-      <ParticleCanvas />
-
       {/* Skip to Content for Keyboard Accessibility */}
       <a
         href="#main-content"
@@ -179,10 +182,6 @@ export const AppShell: React.FC<AppShellProps> = ({
               Future Realms
             </div>
             <div className="p-3 rounded-xl border-2 border-slate-100 bg-slate-50/70 text-[11px] font-medium text-slate-500 space-y-2">
-              <div className="flex items-center justify-between">
-                <span>Molecule Studio</span>
-                <Badge size="sm" variant="neutral">Phase 08</Badge>
-              </div>
               <div className="flex items-center justify-between">
                 <span>Domain Engine</span>
                 <Badge size="sm" variant="neutral">Phase 05</Badge>

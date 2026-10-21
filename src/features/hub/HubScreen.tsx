@@ -14,7 +14,9 @@ import {
   Play,
   Zap,
   Star,
-  ChevronRight
+  ChevronRight,
+  Layers,
+  Wand2
 } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Badge, ProgressBar } from '../../components/ui';
 import { CURRICULUM_WORLDS } from '../../data/curriculumData';
@@ -23,7 +25,7 @@ import { progressAdapter, PlayerProfile } from '../../infrastructure/persistence
 import { LevelRunnerModal } from '../progression/LevelRunnerModal';
 
 export interface HubScreenProps {
-  onNavigate: (route: 'worlds' | 'periodic-table' | 'virtual-lab' | 'settings') => void;
+  onNavigate: (route: 'worlds' | 'periodic-table' | 'virtual-lab' | 'molecule-studio' | 'settings') => void;
 }
 
 export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
@@ -74,6 +76,15 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
                 onClick={() => onNavigate('worlds')}
               >
                 ENTER WORLDS (8)
+              </Button>
+              <Button 
+                variant="primary" 
+                size="lg" 
+                leftIcon={<Layers className="w-4 h-4" />}
+                onClick={() => onNavigate('molecule-studio')}
+                className="bg-[#00C2D1] hover:bg-[#008E9B] text-white border-b-4 border-[#007A85]"
+              >
+                3D MOLECULE STUDIO
               </Button>
               <Button 
                 variant="gold" 
@@ -247,6 +258,36 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
           </CardFooter>
         </Card>
       </div>
+
+      {/* 3D Molecule Studio Featured Quick-Launch Banner */}
+      <section className="p-6 rounded-3xl border-2 border-teal-200 bg-gradient-to-r from-teal-50/90 via-white to-amber-50/60 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#00C2D1] text-white flex items-center justify-center shadow-md shadow-teal-500/20 shrink-0">
+            <Layers className="w-8 h-8" />
+          </div>
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-100 text-[#008E9B] text-[10px] font-montserrat font-extrabold uppercase mb-1">
+              PHYSICS & GEOMETRY STUDIO
+            </div>
+            <h3 className="text-xl font-montserrat font-extrabold text-[#0B1F2A]">
+              3D Molecular Viewer & Interactive Builder
+            </h3>
+            <p className="text-xs text-slate-600 max-w-xl">
+              Inspect 25+ verified molecules with accurate bond lengths and angles in Ångströms, or assemble custom molecules atom-by-atom with real-time VSEPR force-field physics relaxation!
+            </p>
+          </div>
+        </div>
+
+        <Button
+          variant="primary"
+          size="lg"
+          rightIcon={<ArrowRight className="w-4 h-4" />}
+          onClick={() => onNavigate('molecule-studio')}
+          className="shrink-0 bg-[#00C2D1] hover:bg-[#008E9B] text-white border-b-4 border-[#007A85]"
+        >
+          LAUNCH STUDIO
+        </Button>
+      </section>
 
       {/* Eight Scientific Worlds Grid with Real Sliced Artwork */}
       <section className="space-y-4">

@@ -5,6 +5,7 @@ import { WorldMapScreen } from './features/worlds/WorldMapScreen';
 import { WorldOverviewScreen } from './features/worlds/WorldOverviewScreen';
 import { PeriodicTableScreen } from './features/periodic-table/PeriodicTableScreen';
 import { VirtualLabScreen } from './features/virtual-lab/VirtualLabScreen';
+import { MoleculeStudioScreen } from './features/molecule-studio/MoleculeStudioScreen';
 import { SettingsScreen } from './features/settings/SettingsScreen';
 import { WorldSchema } from './domain/types/curriculum';
 
@@ -41,6 +42,8 @@ export const App: React.FC = () => {
         return <WorldMapScreen onSelectWorld={handleSelectWorld} />;
       case 'periodic-table':
         return <PeriodicTableScreen />;
+      case 'molecule-studio':
+        return <MoleculeStudioScreen />;
       case 'virtual-lab':
         return <VirtualLabScreen />;
       case 'settings':

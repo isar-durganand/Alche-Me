@@ -211,6 +211,72 @@ class SoundEngine {
     }
   }
 
+  public playVictoryFanfare(): void {
+    this.playVictory();
+  }
+
+  public playFlameWhoosh(): void {
+    this.playFlame();
+  }
+
+  /**
+   * Positive success chime.
+   */
+  public playSuccess(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const freqs = [523.25, 659.25]; // C5 to E5
+      freqs.forEach((f, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + idx * 0.07);
+
+        gain.gain.setValueAtTime(0.08, now + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2 + idx * 0.07);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + idx * 0.07);
+        osc.stop(now + 0.22 + idx * 0.07);
+      });
+    } catch {
+      // Ignored
+    }
+  }
+
+  /**
+   * Gentle error warning buzz.
+   */
+  public playError(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(120, now + 0.15);
+
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.17);
+    } catch {
+      // Ignored
+    }
+  }
+
   /**
    * Interactive subtle button tap.
    */
