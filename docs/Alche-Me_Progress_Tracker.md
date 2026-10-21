@@ -245,3 +245,70 @@ Update this file at the end of every phase. Do not mark work complete without ve
 
 - **Next recommended phase:**
   - **Phase 04 — Accounts and persistence** (`Phase-04-Accounts-and-Saves.md`).
+
+---
+
+### World & Level Implementation — 8 Scientific Worlds, 56-Level Curriculum & Level 1.1 Vertical Slice
+- **Date:** October 2026
+- **Summary of implementation:**
+  - Implemented the target 8-world, 56-level curriculum specification defined in `level & worlds description.md`:
+    1. **World 1 — The Spark of Discovery** (7 levels: Welcome Explorer, The Matter Museum, Three States, Mystery of Mixing, Measurement Workshop, Safe Lab Code, Boss: Restore Discovery Core)
+    2. **World 2 — Atomic Frontier** (7 levels: Inside Atom, Element Identity Lock, Isotope Observatory, Ions and Charge Reactor, Periodic Table Expedition, Electron Shells, Boss: Element Atlas)
+    3. **World 3 — The Bonding Citadel** (7 levels: Why Atoms Combine, Ionic Bridgeworks, Covalent Architectures, Shapes in 3D, Formula and Naming, Reaction Gate, Boss: Rebuild Citadel)
+    4. **World 4 — The Quantitative Crucible** (7 levels: Mole Bridge, Equation-to-Quantity, Solutions & Concentration, Gas & Pressure, Energy Landscape, Equilibrium & Rate, Boss: Precision Trial)
+    5. **World 5 — The Realm of Reactions** (7 levels: Acid/Base/Indicator, Redox Power Plant, Periodic Trend Observatory, Organic Structure Workshop, Organic Reaction Routes, Electrochemistry & Cells, Boss: Reaction Nexus)
+    6. **World 6 — The Analytical Labyrinth** (7 levels: Instruments & Calibration, Titration Control Room, Spectroscopy Signal Vault, Chromatography Crossing, Water Quality Investigation, Error & Lab Reports, Boss: Evidence Tribunal)
+    7. **World 7 — The Engineering Frontier** (7 levels: Materials & Crystal Lab, Corrosion Defense, Polymers & Smart Materials, Fuels & Combustion, Water Treatment & Analysis, Engineering Chemistry Practical, Boss: Engineering Design Review)
+    8. **World 8 — The Alchemist's Future** (7 levels: Process Flow Architect, Computational Chemistry Observatory, Green Chemistry Challenge, Industrial Process Optimization, Environmental Forensics, Capstone: Design a Better System, Final Boss: The Alche-Me Council)
+  - Designed and implemented a typed, versioned curriculum schema in `src/domain/types/curriculum.ts`:
+    - Stable IDs, world IDs, prerequisites, learning objectives, key concepts, lesson sections, activity configs, assessment definitions, weighted scoring rules (activity 50% + assessment 50%), mastery thresholds, rewards, unlocks, content sources, and review metadata.
+  - Implemented a complete, interactive, end-to-end vertical slice for **Level 1.1 — Welcome, Explorer!**:
+    - **Step 1 (Briefing):** Story hook, estimated time, reward preview (+100 XP), and learning competencies.
+    - **Step 2 (Discovery):** 3 structured lessons on the science of matter, direct observation vs inference, and testable hypotheses with key takeaways.
+    - **Step 3 (Investigation Workbench):** Reusable `ClassificationActivity` where players inspect 8 pieces of empirical evidence across 4 real laboratory setups (bubbling beaker, analytical balance, thermocouple probe, corroded copper coupon) and classify them into "Direct Observation" vs "Explanatory Inference" with instant pedagogical explanations for each item.
+    - **Step 4 (Mastery Assessment):** 4 reviewed scenario questions testing empirical deduction and hypothesis verification with rationales.
+    - **Step 5 (Mastery & Rewards):** Final score calculation, "Curious Observer" badge award, Field Journal unlock, Level 1.2 unlock, and deterministic persistence in `progressAdapter`.
+  - Upgraded the World Map (`WorldMapScreen.tsx`) to display all 8 worlds with individual sliced concept artwork (`world-1.png` to `world-8.png`), prerequisite locking, and mastery bars.
+  - Created `LevelRunnerModal.tsx` as a reusable multi-step level orchestrator.
+  - Sliced and created world thumbnails for World 7 and World 8 from high-resolution laboratory concept assets.
+  - Updated `public/assets/manifests/asset-manifest.csv` to track all 8 world images.
+  - Expanded unit test suite in `tests/progression.test.ts` to 8 comprehensive tests (16 tests across all suites).
+
+- **Files added/changed:**
+  - `src/domain/types/curriculum.ts` (New - Typed curriculum schema)
+  - `src/features/progression/activities/ClassificationActivity.tsx` (New - Reusable classification workbench)
+  - `src/features/progression/LevelRunnerModal.tsx` (New - Complete level journey orchestrator)
+  - `src/data/curriculumData.ts` (Updated - 8 Worlds & 56 Levels data conforming to schema)
+  - `src/features/worlds/WorldMapScreen.tsx` (Updated - Renders all 8 worlds with lock rules)
+  - `src/features/worlds/WorldOverviewScreen.tsx` (Updated - Renders 7 levels per world with LevelRunnerModal)
+  - `src/features/hub/HubScreen.tsx` (Updated - Connects to Level 1.1 vertical slice and 8-world preview)
+  - `src/App.tsx` (Updated - Uses `WorldSchema`)
+  - `public/assets/worlds/world-7.png`, `public/assets/worlds/world-8.png` (New - World artwork)
+  - `public/assets/manifests/asset-manifest.csv` (Updated - Manifest entries for all 8 world images)
+  - `tests/progression.test.ts` (Updated - Comprehensive tests for 8 worlds, 56 levels, and Level 1.1 schema)
+  - `docs/Alche-Me_Progress_Tracker.md` (Updated)
+
+- **Commands run and exit status:**
+  - `npm test` (`vitest run`) — Exit code: 0 (16/16 passed across 3 test suites in 6.30s)
+  - `npm run build` (`tsc -b && vite build`) — Exit code: 0 (Built in 14.97s, zero type/build errors)
+
+- **Tests added and results:**
+  - `tests/progression.test.ts`:
+    - `should initialize player profile with baseline values` — PASSED
+    - `should award deterministic XP and calculate player level on activity completion` — PASSED
+    - `should distinguish completed vs mastered based on the 90% threshold in progressAdapter` — PASSED
+    - `should retain best score and increment attempts on repeated attempts` — PASSED
+    - `should have exactly 8 structured curriculum worlds matching the specification` — PASSED
+    - `should define exactly 56 curriculum levels (7 levels in each of the 8 worlds)` — PASSED
+    - `should have a fully implemented Level 1.1 vertical slice with complete curriculum schema` — PASSED
+    - `should enforce prerequisite unlock chains between levels and worlds` — PASSED
+  - Total across all suites: 16 passed, 0 failed.
+
+- **Screens/devices checked:**
+  - Level 1.1 Vertical Slice: Successfully launched from both Hub and World Map, read lesson, classified all 8 items in the interactive workbench, reviewed explanations, completed 4 assessment questions, and verified +100 XP and "Curious Observer" badge unlock.
+  - World Map (8 Worlds): Verified that World 1 is available, while Worlds 2–8 enforce prerequisite locks until preceding worlds/bosses are mastered.
+  - Responsive layout: Verified classification cards, category target bins, and level runner dialog on mobile and desktop viewports.
+
+- **Known limitations and content status:**
+  - Level 1.1 is fully implemented end-to-end with interactive workbench, assessment, and persistence.
+  - Levels 1.2–8.7 have their structured curriculum schemas (learning objectives, key concepts, prerequisites, and source metadata) defined and marked as `planned`, ready for their specific activity engines in subsequent phases.

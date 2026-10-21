@@ -6,13 +6,13 @@ import { WorldOverviewScreen } from './features/worlds/WorldOverviewScreen';
 import { PeriodicTableScreen } from './features/periodic-table/PeriodicTableScreen';
 import { VirtualLabScreen } from './features/virtual-lab/VirtualLabScreen';
 import { SettingsScreen } from './features/settings/SettingsScreen';
-import { CurriculumWorld } from './data/curriculumData';
+import { WorldSchema } from './domain/types/curriculum';
 
 export const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<NavRoute>('hub');
-  const [selectedWorld, setSelectedWorld] = useState<CurriculumWorld | null>(null);
+  const [selectedWorld, setSelectedWorld] = useState<WorldSchema | null>(null);
 
-  const handleSelectWorld = (world: CurriculumWorld) => {
+  const handleSelectWorld = (world: WorldSchema) => {
     setSelectedWorld(world);
   };
 

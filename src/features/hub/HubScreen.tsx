@@ -17,10 +17,10 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Badge, ProgressBar } from '../../components/ui';
-import { CURRICULUM_WORLDS, CurriculumLevel } from '../../data/curriculumData';
+import { CURRICULUM_WORLDS } from '../../data/curriculumData';
+import { LevelSchema, WorldSchema } from '../../domain/types/curriculum';
 import { progressAdapter, PlayerProfile } from '../../infrastructure/persistence/progressAdapter';
-import { MissionBriefingModal } from '../progression/MissionBriefingModal';
-import { ActivityPlayerModal } from '../progression/ActivityPlayerModal';
+import { LevelRunnerModal } from '../progression/LevelRunnerModal';
 
 export interface HubScreenProps {
   onNavigate: (route: 'worlds' | 'periodic-table' | 'virtual-lab' | 'settings') => void;
@@ -29,8 +29,7 @@ export interface HubScreenProps {
 export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
   const [profile, setProfile] = useState<PlayerProfile>(progressAdapter.getPlayerProfile());
   const [allProgress, setAllProgress] = useState(progressAdapter.getAllProgress());
-  const [briefingLevel, setBriefingLevel] = useState<CurriculumLevel | null>(null);
-  const [playingLevel, setPlayingLevel] = useState<CurriculumLevel | null>(null);
+  const [runnerLevel, setRunnerLevel] = useState<LevelSchema | null>(null);
 
   useEffect(() => {
     return progressAdapter.subscribe(() => {
@@ -39,8 +38,8 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
     });
   }, []);
 
-  // Find next playable level in Discovery Academy
-  const discoveryWorld = CURRICULUM_WORLDS.find((w) => w.id === 'discovery-academy');
+  // Find next playable level in World 1 Discovery
+  const discoveryWorld = CURRICULUM_WORLDS.find((w) => w.id === 'world-1-discovery');
   const nextLevel = discoveryWorld?.levels.find((lvl) => {
     const status = allProgress[lvl.id]?.status;
     return status !== 'completed' && status !== 'mastered';
@@ -56,7 +55,7 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
           <div className="lg:col-span-7 space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-[#00C2D1] text-xs font-montserrat font-bold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>OFFICIAL CHEMISTRY ADVENTURE</span>
+              <span>OFFICIAL 8-WORLD CHEMISTRY CURRICULUM</span>
             </div>
             
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-montserrat font-extrabold tracking-tight text-[#0B1F2A] leading-tight">
@@ -74,7 +73,7 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
                 rightIcon={<ArrowRight className="w-4 h-4" />}
                 onClick={() => onNavigate('worlds')}
               >
-                ENTER WORLDS
+                ENTER WORLDS (8)
               </Button>
               <Button 
                 variant="gold" 
@@ -109,10 +108,10 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
                     WORLD 01
                   </Badge>
                   <h3 className="font-montserrat font-extrabold text-base leading-tight">
-                    Discovery Academy
+                    The Spark of Discovery
                   </h3>
                   <p className="text-[11px] text-teal-100 font-medium">
-                    Matter, Glassware & Laboratory Hygiene
+                    Observations, Properties & Safety
                   </p>
                 </div>
               </div>
@@ -127,16 +126,16 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
         <Card variant="raised" className="lg:col-span-2 flex flex-col justify-between">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <Badge variant="accent" dot>Recommended Mission</Badge>
+              <Badge variant="accent" dot>Recommended Next Mission</Badge>
               <span className="text-xs font-montserrat font-bold text-slate-400">
-                Course 4.5CH101C00H
+                World 01 • Mission 0{nextLevel?.order || 1}
               </span>
             </div>
             <CardTitle className="text-xl">
-              {nextLevel ? `Mission 0${nextLevel.num}: ${nextLevel.title}` : 'All Missions Cleared!'}
+              {nextLevel ? `Mission 0${nextLevel.order}: ${nextLevel.title}` : 'All Missions Cleared!'}
             </CardTitle>
             <CardDescription className="text-sm">
-              {nextLevel?.summary || 'You have mastered the foundational curriculum levels. Explore more in Adventure Worlds.'}
+              {nextLevel?.shortDescription || 'You have mastered the foundational curriculum levels. Explore more in Adventure Worlds.'}
             </CardDescription>
           </CardHeader>
           
@@ -153,19 +152,19 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
               <div className="p-3 rounded-xl border-2 border-slate-100 bg-slate-50/70">
                 <span className="text-slate-500 block text-[11px] font-medium">Difficulty Level</span>
                 <span className="font-montserrat font-extrabold text-sm capitalize text-[#0B1F2A]">
-                  {nextLevel?.difficulty || 'Foundation'}
+                  {nextLevel?.difficulty || 'Beginner'}
                 </span>
               </div>
               <div className="p-3 rounded-xl border-2 border-slate-100 bg-amber-50/50">
                 <span className="text-amber-700 block text-[11px] font-medium">Clearance Reward</span>
                 <span className="font-montserrat font-extrabold text-sm text-amber-700 flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5 fill-current" /> +{nextLevel?.xpReward || 100} XP
+                  <Zap className="w-3.5 h-3.5 fill-current" /> +{nextLevel?.rewards.xp || 100} XP
                 </span>
               </div>
-              <div className="p-3 rounded-xl border-2 border-slate-100 bg-slate-50/70">
+              <div className="p-3 rounded-2xl border-2 border-slate-100 bg-slate-50/70">
                 <span className="text-slate-500 block text-[11px] font-medium">Estimated Time</span>
                 <span className="font-montserrat font-extrabold text-sm text-[#0B1F2A]">
-                  {nextLevel?.estimatedMinutes || 5} Mins
+                  {nextLevel?.estimatedMinutes || 6} Mins
                 </span>
               </div>
             </div>
@@ -189,7 +188,7 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
                 size="md" 
                 variant="primary" 
                 rightIcon={<Play className="w-4 h-4 fill-current" />} 
-                onClick={() => setBriefingLevel(nextLevel)}
+                onClick={() => setRunnerLevel(nextLevel)}
               >
                 {nextLevelProgress ? 'REPLAY MISSION' : 'PLAY MISSION'}
               </Button>
@@ -243,22 +242,22 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
 
           <CardFooter className="bg-slate-50/60 p-4">
             <Button size="sm" variant="secondary" className="w-full text-xs" onClick={() => onNavigate('worlds')}>
-              VIEW ALL 6 WORLDS
+              VIEW ALL 8 WORLDS
             </Button>
           </CardFooter>
         </Card>
       </div>
 
-      {/* Six Scientific Worlds Grid with Real Sliced Artwork */}
+      {/* Eight Scientific Worlds Grid with Real Sliced Artwork */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-montserrat font-extrabold text-[#0B1F2A] flex items-center gap-2.5">
               <Compass className="w-6 h-6 text-[#00C2D1]" />
-              Adventure Worlds
+              Adventure Worlds (8 Realms)
             </h2>
             <p className="text-xs text-slate-500">
-              Explore 6 curriculum realms spanning foundational atomic structure to engineering practicals
+              Explore 8 curriculum realms spanning foundational atomic structure to engineering practicals
             </p>
           </div>
           <Button variant="secondary" size="sm" onClick={() => onNavigate('worlds')}>
@@ -266,12 +265,14 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {CURRICULUM_WORLDS.map((world) => {
             const completedCount = world.levels.filter(
               (lvl) => allProgress[lvl.id]?.status === 'completed' || allProgress[lvl.id]?.status === 'mastered'
             ).length;
-            const isLocked = world.prerequisiteWorldId ? (allProgress['da-lvl-2']?.status !== 'completed' && allProgress['da-lvl-2']?.status !== 'mastered') : false;
+            const isLocked = world.prerequisiteWorldId
+              ? allProgress['lvl-1-1']?.status !== 'completed' && allProgress['lvl-1-1']?.status !== 'mastered'
+              : false;
 
             return (
               <Card 
@@ -281,7 +282,7 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
                 onClick={() => !isLocked && onNavigate('worlds')}
               >
                 {/* World Image Header */}
-                <div className="relative h-40 w-full overflow-hidden bg-slate-100 border-b-2 border-slate-100">
+                <div className="relative h-36 w-full overflow-hidden bg-slate-100 border-b-2 border-slate-100">
                   <img
                     src={world.thumbnail}
                     alt={world.title}
@@ -294,27 +295,27 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
                   </div>
                   <div className="absolute top-3 right-3">
                     <span className="text-[10px] font-montserrat font-extrabold px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-sm">
-                      {world.levels.length} {world.levels.length === 1 ? 'Mission' : 'Missions'}
+                      {world.levels.length} Missions
                     </span>
                   </div>
                 </div>
 
                 <CardHeader className="p-4 pb-2">
-                  <CardTitle className="text-lg">{world.title}</CardTitle>
-                  <CardDescription className="text-xs font-montserrat font-bold text-[#00C2D1]">
-                    {world.subtitle}
+                  <CardTitle className="text-base">{world.title}</CardTitle>
+                  <CardDescription className="text-xs font-montserrat font-bold text-[#00C2D1] line-clamp-1">
+                    {world.theme}
                   </CardDescription>
                 </CardHeader>
 
                 <CardContent className="p-4 pt-0">
                   <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                    {world.summary}
+                    {world.worldOutcome}
                   </p>
                 </CardContent>
 
-                <CardFooter className="bg-slate-50/80 p-4">
+                <CardFooter className="bg-slate-50/80 p-3.5 border-t-2 border-slate-100">
                   <span className="font-montserrat font-bold text-[11px] text-slate-500">
-                    {world.levels.length > 0 ? `${completedCount} / ${world.levels.length} Cleared` : 'Expansion Realm'}
+                    {completedCount} / {world.levels.length} Cleared
                   </span>
                   <Button 
                     size="sm" 
@@ -334,26 +335,15 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Briefing Modal */}
-      {briefingLevel && (
-        <MissionBriefingModal
-          level={briefingLevel}
-          isOpen={!!briefingLevel}
-          onClose={() => setBriefingLevel(null)}
-          onLaunch={(lvl) => {
-            setBriefingLevel(null);
-            setPlayingLevel(lvl);
+      {/* Level Runner Modal */}
+      {runnerLevel && (
+        <LevelRunnerModal
+          level={runnerLevel}
+          isOpen={!!runnerLevel}
+          onClose={() => setRunnerLevel(null)}
+          onLevelCompleted={() => {
+            // refresh
           }}
-        />
-      )}
-
-      {/* Activity Player Modal */}
-      {playingLevel && (
-        <ActivityPlayerModal
-          level={playingLevel}
-          isOpen={!!playingLevel}
-          onClose={() => setPlayingLevel(null)}
-          onComplete={() => setPlayingLevel(null)}
         />
       )}
     </div>
