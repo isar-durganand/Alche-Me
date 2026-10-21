@@ -7,8 +7,11 @@ import {
   ShieldAlert, 
   Sparkles, 
   ExternalLink,
-  CheckCircle2,
-  Atom
+  CheckCircle2, 
+  Atom,
+  ArrowRight,
+  Beaker,
+  TestTube
 } from 'lucide-react';
 import { EXPERIMENTS_DATA, ExperimentItem } from '../../data/experimentsData';
 import { 
@@ -22,7 +25,7 @@ import {
   CardFooter, 
   Badge, 
   Modal, 
-  Tabs,
+  Tabs, 
   Alert 
 } from '../../components/ui';
 
@@ -59,88 +62,101 @@ export const VirtualLabScreen: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Header & Controls */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-black text-[var(--cq-text)] flex items-center gap-2.5">
-              <FlaskConical className="w-6 h-6 text-[var(--cq-accent)]" />
-              Engineering Chemistry Virtual Laboratory
-            </h1>
-            <p className="text-xs text-[var(--cq-text-muted)]">
-              Official MRIIRS Laboratory Manual (Course Code: 4.5CH101C00H) — 10 University Practicals
-            </p>
+      {/* Laboratory Hero Header with Realistic Backdrop */}
+      <section className="relative rounded-3xl overflow-hidden border-2 border-slate-200/90 bg-white shadow-sm">
+        <div className="relative h-52 sm:h-60 w-full overflow-hidden bg-slate-900">
+          <img
+            src="/assets/backgrounds/Futuristic Chemistry Lab with Mountain Views.png"
+            alt="Futuristic Chemistry Laboratory"
+            className="w-full h-full object-cover opacity-85"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F2A]/90 via-[#0B1F2A]/40 to-transparent flex items-end p-6 sm:p-8">
+            <div className="text-white space-y-1.5 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/30 border border-teal-400/50 backdrop-blur-sm text-teal-200 text-xs font-montserrat font-bold">
+                <FlaskConical className="w-3.5 h-3.5" />
+                <span>MRIIRS SYLLABUS 4.5CH101C00H</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-montserrat font-extrabold text-white leading-tight">
+                Virtual Chemistry Laboratory
+              </h1>
+              <p className="text-xs sm:text-sm text-teal-100 font-medium">
+                10 University-prescribed engineering practicals: volumetric titrimetry, potentiometric redox curves, conductometric neutralization, Redwood viscometry, and computational modeling.
+              </p>
+            </div>
           </div>
-          <Badge variant="accent" size="md">
-            {filteredExperiments.length} Practicals Available
-          </Badge>
         </div>
 
-        {/* Search & Tabs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="md:col-span-1">
-            <Input
-              placeholder="Search experiments by title, reagent, or compound..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onClear={() => setSearchQuery('')}
-              leftIcon={<Search className="w-4 h-4" />}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <Tabs
-              tabs={categories.map((c) => ({ id: c.id, label: c.label }))}
-              activeTab={selectedCategory}
-              onChange={setSelectedCategory}
-            />
+        {/* Filter Controls Bar */}
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="md:col-span-1">
+              <Input
+                placeholder="Search practicals by title, reagent, or compound..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onClear={() => setSearchQuery('')}
+                leftIcon={<Search className="w-4 h-4 text-slate-400" />}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Tabs
+                tabs={categories.map((c) => ({ id: c.id, label: c.label }))}
+                activeTab={selectedCategory}
+                onChange={setSelectedCategory}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Experiments Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredExperiments.map((exp) => (
-          <Card key={exp.id} variant="raised" className="flex flex-col justify-between">
-            <CardHeader>
+          <Card key={exp.id} variant="raised" className="flex flex-col justify-between group">
+            <CardHeader className="p-5 pb-3">
               <div className="flex items-center justify-between">
-                <Badge variant="neutral" size="sm">
-                  Lab {exp.num} • {exp.manualPage}
+                <Badge variant="accent" size="sm">
+                  EXP 0{exp.num} • {exp.manualPage}
                 </Badge>
-                <span className="text-[10px] text-[var(--cq-accent)] font-semibold uppercase tracking-wider">
-                  {exp.category}
+                <span className="text-[10px] text-[#00C2D1] font-montserrat font-extrabold uppercase tracking-wider">
+                  {exp.category.split('&')[0]}
                 </span>
               </div>
-              <CardTitle className="text-base pt-1">{exp.title}</CardTitle>
-              <CardDescription className="line-clamp-2">
+              <CardTitle className="text-lg pt-1 leading-snug">{exp.title}</CardTitle>
+              <CardDescription className="line-clamp-2 text-xs">
                 {exp.aim}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 text-xs">
+            
+            <CardContent className="p-5 pt-0 space-y-3 text-xs">
               <div className="space-y-1">
-                <span className="text-[11px] font-semibold text-[var(--cq-text-muted)]">Target Molecule / Reagent:</span>
-                <div className="p-2 rounded-lg bg-[var(--cq-surface)] border border-[var(--cq-border)]/60 flex items-center justify-between">
-                  <span className="font-semibold text-[var(--cq-text)]">{exp.compoundName}</span>
-                  <span className="font-mono text-[10px] text-[var(--cq-accent)]">{exp.targetSmiles}</span>
+                <span className="text-[11px] font-montserrat font-bold text-slate-500">Target Molecule / Reagent:</span>
+                <div className="p-2.5 rounded-xl bg-slate-50 border-2 border-slate-100 flex items-center justify-between">
+                  <span className="font-montserrat font-bold text-[#0B1F2A]">{exp.compoundName}</span>
+                  <span className="font-mono text-[10px] text-[#00C2D1] bg-white px-2 py-0.5 rounded border border-slate-200">
+                    {exp.targetSmiles}
+                  </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-[var(--cq-text-muted)]">
-                <div>
-                  <span className="font-medium text-[var(--cq-text)]">Reagents: </span>
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+                <div className="p-2 rounded-lg bg-slate-50/70 border border-slate-100">
+                  <span className="font-montserrat font-bold text-[#0B1F2A]">Reagents: </span>
                   {exp.reagents.length} solutions
                 </div>
-                <div>
-                  <span className="font-medium text-[var(--cq-text)]">Apparatus: </span>
-                  {exp.apparatus.length} instruments
+                <div className="p-2 rounded-lg bg-slate-50/70 border border-slate-100">
+                  <span className="font-montserrat font-bold text-[#0B1F2A]">Apparatus: </span>
+                  {exp.apparatus.length} items
                 </div>
               </div>
             </CardContent>
-            <CardFooter>
-              <span className="text-[11px] text-[var(--cq-text-muted)]">
-                Syllabus Page {exp.manualPage.split(' ')[1] || exp.manualPage}
+
+            <CardFooter className="bg-slate-50/80 p-4 border-t-2 border-slate-100">
+              <span className="font-montserrat font-bold text-[11px] text-slate-500">
+                Lab Manual {exp.manualPage}
               </span>
-              <Button size="sm" variant="outline" onClick={() => setActiveExperiment(exp)}>
-                Inspect Protocol
+              <Button size="sm" variant="primary" onClick={() => setActiveExperiment(exp)}>
+                INSPECT PROTOCOL
               </Button>
             </CardFooter>
           </Card>
@@ -158,17 +174,17 @@ export const VirtualLabScreen: React.FC = () => {
         >
           <div className="space-y-5 text-xs">
             {/* Aim */}
-            <div className="space-y-1">
-              <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-accent)]">Aim of Experiment</span>
-              <p className="p-3 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] text-[var(--cq-text)] leading-relaxed">
+            <div className="space-y-1.5">
+              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1]">Aim of Experiment</span>
+              <p className="p-3.5 rounded-2xl border-2 border-slate-100 bg-slate-50/70 text-[#0B1F2A] leading-relaxed text-sm font-medium">
                 {activeExperiment.aim}
               </p>
             </div>
 
             {/* Principle */}
-            <div className="space-y-1">
-              <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-accent)]">Chemical Principle & Theory</span>
-              <p className="p-3 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] text-[var(--cq-text)] leading-relaxed">
+            <div className="space-y-1.5">
+              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1]">Chemical Principle & Theory</span>
+              <p className="p-3.5 rounded-2xl border-2 border-slate-100 bg-slate-50/70 text-[#0B1F2A] leading-relaxed text-sm">
                 {activeExperiment.principle}
               </p>
             </div>
@@ -176,8 +192,8 @@ export const VirtualLabScreen: React.FC = () => {
             {/* Stoichiometric Reactions */}
             {activeExperiment.reactions && activeExperiment.reactions.length > 0 && (
               <div className="space-y-1.5">
-                <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-accent)]">Stoichiometric Equations</span>
-                <div className="space-y-1 p-3 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-bg)] font-mono text-[11px] text-[var(--cq-accent)]">
+                <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1]">Stoichiometric Equations</span>
+                <div className="space-y-1 p-3.5 rounded-2xl border-2 border-slate-100 bg-white font-mono text-[11px] text-[#00C2D1] shadow-sm">
                   {activeExperiment.reactions.map((rxn, idx) => (
                     <div key={idx} className="py-0.5">• {rxn}</div>
                   ))}
@@ -187,10 +203,10 @@ export const VirtualLabScreen: React.FC = () => {
 
             {/* Procedure Steps */}
             <div className="space-y-1.5">
-              <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-accent)]">Standard Laboratory Procedure</span>
+              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1]">Standard Laboratory Procedure</span>
               <div className="space-y-2">
                 {activeExperiment.procedure.map((step, idx) => (
-                  <div key={idx} className="p-2.5 rounded-lg border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] leading-relaxed text-[var(--cq-text)]">
+                  <div key={idx} className="p-3 rounded-xl border-2 border-slate-100 bg-slate-50/70 leading-relaxed text-[#0B1F2A] text-xs">
                     {step}
                   </div>
                 ))}
@@ -198,9 +214,9 @@ export const VirtualLabScreen: React.FC = () => {
             </div>
 
             {/* Formulae & Calculations */}
-            <div className="space-y-1">
-              <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-accent)]">Formulae & Calculations</span>
-              <pre className="p-3 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-bg)] font-mono text-[11px] text-[var(--cq-text)] whitespace-pre-wrap leading-relaxed">
+            <div className="space-y-1.5">
+              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1]">Formulae & Calculations</span>
+              <pre className="p-3.5 rounded-2xl border-2 border-slate-100 bg-white font-mono text-[11px] text-[#0B1F2A] whitespace-pre-wrap leading-relaxed shadow-sm">
                 {activeExperiment.formulae}
               </pre>
             </div>
@@ -219,7 +235,7 @@ export const VirtualLabScreen: React.FC = () => {
             {/* Actions */}
             <div className="pt-2 flex justify-end gap-2">
               <Button size="sm" variant="secondary" onClick={() => setActiveExperiment(null)}>
-                Close Worksheet
+                CLOSE WORKSHEET
               </Button>
             </div>
           </div>

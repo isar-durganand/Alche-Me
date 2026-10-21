@@ -10,14 +10,14 @@ import {
   Sparkles, 
   Menu, 
   X, 
-  ShieldCheck, 
-  Sun, 
-  Moon, 
-  Search,
-  ExternalLink,
-  ChevronRight,
-  User,
-  Award
+  Flame, 
+  Volume2, 
+  VolumeX, 
+  ChevronRight, 
+  User, 
+  Award,
+  Zap,
+  HelpCircle
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -38,7 +38,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   children,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isHighContrast, setIsHighContrast] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profile, setProfile] = useState<PlayerProfile>(progressAdapter.getPlayerProfile());
 
@@ -48,44 +48,39 @@ export const AppShell: React.FC<AppShellProps> = ({
     });
   }, []);
 
-  const toggleHighContrast = () => {
-    setIsHighContrast(!isHighContrast);
-    if (!isHighContrast) {
-      document.documentElement.classList.add('high-contrast');
-    } else {
-      document.documentElement.classList.remove('high-contrast');
-    }
+  const toggleSound = () => {
+    setSoundEnabled(!soundEnabled);
   };
 
   const navItems = [
     {
       id: 'hub' as NavRoute,
       label: 'Home & Hub',
-      icon: <Home className="w-4 h-4" />,
-      badge: 'v0.1',
+      icon: <Home className="w-4 h-4 shrink-0" />,
+      badge: 'Main',
     },
     {
       id: 'worlds' as NavRoute,
       label: 'Adventure Worlds',
-      icon: <Compass className="w-4 h-4" />,
+      icon: <Compass className="w-4 h-4 shrink-0" />,
       badge: '6 Realms',
     },
     {
       id: 'periodic-table' as NavRoute,
       label: 'Periodic Table',
-      icon: <Atom className="w-4 h-4" />,
-      badge: 'Elements',
+      icon: <Atom className="w-4 h-4 shrink-0" />,
+      badge: '118 Elements',
     },
     {
       id: 'virtual-lab' as NavRoute,
       label: 'Virtual Laboratory',
-      icon: <FlaskConical className="w-4 h-4" />,
+      icon: <FlaskConical className="w-4 h-4 shrink-0" />,
       badge: '10 Practicals',
     },
     {
       id: 'settings' as NavRoute,
       label: 'Settings & Health',
-      icon: <SettingsIcon className="w-4 h-4" />,
+      icon: <SettingsIcon className="w-4 h-4 shrink-0" />,
     },
   ];
 
@@ -97,11 +92,11 @@ export const AppShell: React.FC<AppShellProps> = ({
   const activeItem = navItems.find((n) => n.id === currentRoute);
 
   return (
-    <div className="min-h-screen bg-[var(--cq-bg)] text-[var(--cq-text)] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F7F8FA] text-[#0B1F2A] flex flex-col font-sans select-none">
       {/* Skip to Content for Keyboard Accessibility */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--cq-accent)] focus:text-black focus:font-semibold focus:rounded-lg focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#00C2D1] focus:text-white focus:font-montserrat focus:font-bold focus:rounded-xl focus:shadow-lg"
       >
         Skip to main content
       </a>
@@ -111,29 +106,31 @@ export const AppShell: React.FC<AppShellProps> = ({
         {/* Desktop Sidebar (Permanent) */}
         <aside
           aria-label="Desktop Navigation"
-          className="hidden md:flex flex-col w-64 border-r border-[var(--cq-border)] bg-[var(--cq-surface)] shrink-0 z-20"
+          className="hidden md:flex flex-col w-64 border-r-2 border-slate-200/90 bg-white shrink-0 z-20 shadow-[2px_0_12px_rgba(11,31,42,0.03)]"
         >
           {/* Logo & Brand Header */}
-          <div className="h-16 flex items-center gap-3 px-5 border-b border-[var(--cq-border)]">
-            <img
-              src="/assets/branding/alche-me-mark.svg"
-              alt="Alche-Me Logo"
-              className="w-8 h-8 rounded-lg border border-[var(--cq-border)] p-0.5 bg-[var(--cq-surface-raised)]"
-            />
+          <div className="h-20 flex items-center gap-3 px-5 border-b-2 border-slate-100 bg-white">
+            <div className="relative group cursor-pointer" onClick={() => handleNavClick('hub')}>
+              <img
+                src="/assets/branding/Alche-Me Logo.png"
+                alt="Alche-Me Logo"
+                className="w-11 h-11 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
+              />
+            </div>
             <div className="flex flex-col">
-              <span className="font-bold text-base tracking-tight text-[var(--cq-text)]">
-                Alche-Me
+              <span className="font-montserrat font-extrabold text-lg tracking-tight text-[#0B1F2A] leading-tight">
+                ALCHE-ME
               </span>
-              <span className="text-[10px] text-[var(--cq-text-muted)] font-mono">
-                Scientific Adventure
+              <span className="text-[10px] font-montserrat font-bold uppercase tracking-wider text-[#00C2D1]">
+                Chemistry Adventure
               </span>
             </div>
           </div>
 
           {/* Nav Links */}
           <nav aria-label="Main Navigation" className="p-3 space-y-1.5 flex-1">
-            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[var(--cq-text-muted)]">
-              Core Navigation
+            <div className="px-3 py-2 text-[10px] font-montserrat font-extrabold uppercase tracking-wider text-slate-400">
+              Game Navigation
             </div>
             {navItems.map((item) => {
               const isActive = item.id === currentRoute;
@@ -142,10 +139,10 @@ export const AppShell: React.FC<AppShellProps> = ({
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-montserrat font-bold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[var(--cq-accent)] text-[#101317] font-semibold shadow-sm'
-                      : 'text-[var(--cq-text-muted)] hover:text-[var(--cq-text)] hover:bg-[var(--cq-surface-raised)]'
+                      ? 'bg-[#00C2D1] text-white border-b-2 border-[#008E9B] shadow-sm shadow-teal-500/20 translate-y-[-1px]'
+                      : 'text-slate-600 hover:text-[#0B1F2A] hover:bg-slate-100/80 active:translate-y-0.5'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -154,10 +151,10 @@ export const AppShell: React.FC<AppShellProps> = ({
                   </div>
                   {item.badge && (
                     <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono ${
+                      className={`text-[9px] px-2 py-0.5 rounded-full font-montserrat font-extrabold ${
                         isActive
-                          ? 'bg-black/20 text-[#101317]'
-                          : 'bg-[var(--cq-surface-raised)] text-[var(--cq-text-muted)] border border-[var(--cq-border)]'
+                          ? 'bg-white/25 text-white'
+                          : 'bg-slate-100 text-slate-500 border border-slate-200'
                       }`}
                     >
                       {item.badge}
@@ -167,10 +164,10 @@ export const AppShell: React.FC<AppShellProps> = ({
               );
             })}
 
-            <div className="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[var(--cq-text-muted)]">
-              Roadmap Modules
+            <div className="pt-4 px-3 py-2 text-[10px] font-montserrat font-extrabold uppercase tracking-wider text-slate-400">
+              Future Realms
             </div>
-            <div className="px-3 py-2 rounded-lg border border-[var(--cq-border)]/50 bg-[var(--cq-surface-raised)]/50 text-[11px] text-[var(--cq-text-muted)] space-y-1.5">
+            <div className="p-3 rounded-xl border-2 border-slate-100 bg-slate-50/70 text-[11px] font-medium text-slate-500 space-y-2">
               <div className="flex items-center justify-between">
                 <span>Molecule Studio</span>
                 <Badge size="sm" variant="neutral">Phase 08</Badge>
@@ -187,72 +184,97 @@ export const AppShell: React.FC<AppShellProps> = ({
           </nav>
 
           {/* Sidebar Footer Info */}
-          <div className="p-4 border-t border-[var(--cq-border)] space-y-2 text-xs">
+          <div className="p-4 border-t-2 border-slate-100 bg-slate-50/50 space-y-2 text-xs">
             <button
               onClick={() => setShowProfileModal(true)}
-              className="w-full p-2.5 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] hover:border-[var(--cq-accent)] transition-colors flex items-center justify-between cursor-pointer"
+              className="w-full p-3 rounded-xl border-2 border-slate-200/80 bg-white hover:border-[#00C2D1] shadow-sm transition-all flex items-center justify-between cursor-pointer group"
             >
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-[var(--cq-accent-subtle)] text-[var(--cq-accent)] font-bold text-xs flex items-center justify-center">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 text-[#00C2D1] font-montserrat font-extrabold text-sm flex items-center justify-center group-hover:scale-105 transition-transform">
                   {profile.level}
                 </div>
                 <div className="text-left">
-                  <span className="font-semibold text-xs block text-[var(--cq-text)] truncate max-w-[100px]">
+                  <span className="font-montserrat font-bold text-xs block text-[#0B1F2A] truncate max-w-[100px]">
                     {profile.displayName}
                   </span>
-                  <span className="text-[10px] text-[var(--cq-accent)] font-mono">{profile.xp} XP</span>
+                  <span className="text-[10px] font-montserrat font-extrabold text-[#F5B942] flex items-center gap-0.5">
+                    <Zap className="w-3 h-3 fill-current" /> {profile.xp} XP
+                  </span>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[var(--cq-text-muted)]" />
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#00C2D1] transition-colors" />
             </button>
           </div>
         </aside>
 
-        {/* Mobile / Tablet Top Header */}
+        {/* Mobile / Tablet Top Header & Game HUD */}
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 border-b border-[var(--cq-border)] bg-[var(--cq-surface)] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+          <header className="h-20 border-b-2 border-slate-200/90 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-[0_2px_10px_rgba(11,31,42,0.03)]">
             {/* Mobile Hamburger + Title */}
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg text-[var(--cq-text-muted)] hover:text-[var(--cq-text)] hover:bg-[var(--cq-surface-raised)] cursor-pointer"
+                className="md:hidden p-2 rounded-xl text-slate-600 hover:text-[#0B1F2A] hover:bg-slate-100 cursor-pointer"
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
 
-              <div className="flex items-center gap-2 text-xs text-[var(--cq-text-muted)]">
-                <span className="font-semibold text-[var(--cq-text)] hidden sm:inline">Alche-Me</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[var(--cq-border)] hidden sm:inline" />
-                <span className="text-[var(--cq-accent)] font-medium">{activeItem?.label}</span>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-montserrat font-extrabold text-base text-[#0B1F2A] hidden sm:inline">
+                  Alche-Me
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-300 hidden sm:inline" />
+                <span className="font-montserrat font-bold text-sm text-[#00C2D1]">
+                  {activeItem?.label}
+                </span>
               </div>
             </div>
 
-            {/* Top Bar Actions */}
-            <div className="flex items-center gap-2.5">
-              {/* Profile XP Pill */}
+            {/* Gamified HUD Top Bar Elements */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Daily Streak Flame */}
+              <div 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200/80 text-orange-600 shadow-sm"
+                title="Current Daily Streak"
+              >
+                <Flame className="w-4 h-4 fill-orange-500 text-orange-500 animate-pulse" />
+                <span className="font-montserrat font-extrabold text-xs text-orange-700">
+                  {profile.streakDays} {profile.streakDays === 1 ? 'Day' : 'Days'}
+                </span>
+              </div>
+
+              {/* Energy / XP Gold Pill */}
               <button
                 type="button"
                 onClick={() => setShowProfileModal(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] hover:border-[var(--cq-accent)] transition-colors text-xs cursor-pointer"
-                title="View Scholar Profile & Quests"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border-2 border-amber-300/80 hover:bg-amber-100 transition-colors cursor-pointer shadow-sm"
+                title="Scholar XP & Level Progress"
               >
-                <Award className="w-3.5 h-3.5 text-[var(--cq-accent)]" />
-                <span className="font-semibold text-[var(--cq-text)]">Lvl {profile.level}</span>
-                <span className="text-[10px] font-mono text-[var(--cq-accent)]">{profile.xp} XP</span>
+                <Zap className="w-4 h-4 fill-amber-500 text-amber-500" />
+                <span className="font-montserrat font-extrabold text-xs text-amber-900">
+                  {profile.xp} XP
+                </span>
+                <span className="text-[10px] font-montserrat font-bold px-1.5 py-0.2 rounded-full bg-amber-200/60 text-amber-950">
+                  Lvl {profile.level}
+                </span>
               </button>
 
+              {/* Sound Toggle */}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={toggleHighContrast}
-                title="Toggle High Contrast Mode"
-                aria-label="Toggle High Contrast"
-                className="text-xs"
+                onClick={toggleSound}
+                title={soundEnabled ? 'Mute Game Audio' : 'Unmute Game Audio'}
+                aria-label={soundEnabled ? 'Mute audio' : 'Unmute audio'}
+                className="p-2 min-h-0 text-slate-600 hover:text-[#0B1F2A]"
               >
-                {isHighContrast ? <Sun className="w-4 h-4 text-[var(--cq-warning)]" /> : <Moon className="w-4 h-4" />}
-                <span className="hidden sm:inline">{isHighContrast ? 'Standard' : 'Contrast'}</span>
+                {soundEnabled ? (
+                  <Volume2 className="w-4 h-4 text-teal-600" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-slate-400" />
+                )}
               </Button>
             </div>
           </header>
@@ -260,16 +282,16 @@ export const AppShell: React.FC<AppShellProps> = ({
           {/* Mobile Drawer (When Open) */}
           {mobileMenuOpen && (
             <div
-              className="md:hidden fixed inset-0 top-16 z-40 bg-black/80 backdrop-blur-sm animate-in fade-in"
+              className="md:hidden fixed inset-0 top-20 z-40 bg-black/50 backdrop-blur-sm animate-in fade-in"
               onClick={() => setMobileMenuOpen(false)}
             >
               <nav
                 aria-label="Mobile Navigation Drawer"
-                className="w-4/5 max-w-sm h-full bg-[var(--cq-surface)] border-r border-[var(--cq-border)] p-4 space-y-2"
+                className="w-4/5 max-w-sm h-full bg-white border-r-2 border-slate-200 p-4 space-y-2 shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[var(--cq-text-muted)]">
-                  Navigation
+                <div className="px-3 py-2 text-[11px] font-montserrat font-extrabold uppercase tracking-wider text-slate-400">
+                  Game Navigation
                 </div>
                 {navItems.map((item) => {
                   const isActive = item.id === currentRoute;
@@ -277,10 +299,10 @@ export const AppShell: React.FC<AppShellProps> = ({
                     <button
                       key={item.id}
                       onClick={() => handleNavClick(item.id)}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl text-sm font-medium transition-colors ${
+                      className={`w-full flex items-center justify-between p-3 rounded-xl text-sm font-montserrat font-bold transition-all ${
                         isActive
-                          ? 'bg-[var(--cq-accent)] text-[#101317] font-semibold'
-                          : 'text-[var(--cq-text-muted)] hover:text-white hover:bg-[var(--cq-surface-raised)]'
+                          ? 'bg-[#00C2D1] text-white border-b-2 border-[#008E9B] shadow-sm'
+                          : 'text-slate-600 hover:text-[#0B1F2A] hover:bg-slate-100'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -288,7 +310,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                         <span>{item.label}</span>
                       </div>
                       {item.badge && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/20 font-mono">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 font-montserrat font-extrabold">
                           {item.badge}
                         </span>
                       )}
@@ -309,7 +331,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       {/* Mobile Bottom Thumb Navigation Bar */}
       <nav
         aria-label="Mobile Quick Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[var(--cq-surface)] border-t border-[var(--cq-border)] px-4 flex items-center justify-around z-30"
+        className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t-2 border-slate-200 px-4 flex items-center justify-around z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]"
       >
         {navItems.map((item) => {
           const isActive = item.id === currentRoute;
@@ -318,14 +340,14 @@ export const AppShell: React.FC<AppShellProps> = ({
               key={item.id}
               onClick={() => handleNavClick(item.id)}
               aria-label={item.label}
-              className={`flex flex-col items-center justify-center gap-1 w-14 h-12 rounded-lg transition-colors cursor-pointer ${
+              className={`flex flex-col items-center justify-center gap-1 w-14 h-12 rounded-xl transition-all cursor-pointer ${
                 isActive
-                  ? 'text-[var(--cq-accent)] font-semibold'
-                  : 'text-[var(--cq-text-muted)] hover:text-[var(--cq-text)]'
+                  ? 'text-[#00C2D1] font-montserrat font-extrabold scale-105'
+                  : 'text-slate-500 hover:text-[#0B1F2A]'
               }`}
             >
               {item.icon}
-              <span className="text-[9px] tracking-tight truncate max-w-full">
+              <span className="text-[9px] font-montserrat font-bold tracking-tight truncate max-w-full">
                 {item.label.split(' ')[0]}
               </span>
             </button>

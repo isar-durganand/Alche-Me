@@ -8,7 +8,8 @@ import {
   FlaskConical, 
   Atom, 
   RotateCcw,
-  User
+  User,
+  Zap
 } from 'lucide-react';
 import { progressAdapter, PlayerProfile } from '../../infrastructure/persistence/progressAdapter';
 import { ACHIEVEMENTS, ACTIVE_QUESTS } from '../../data/questsData';
@@ -41,51 +42,51 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Scholar Profile & Mastery Ledger"
-      description="Local achievements, experience points, and learning progression"
+      description="Achievements, experience points, and learning progression"
       size="md"
     >
       <div className="space-y-6 text-xs">
         {/* Profile Header Card */}
-        <div className="p-4 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] flex items-center justify-between gap-4">
+        <div className="p-4 rounded-2xl border-2 border-slate-100 bg-slate-50/70 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[var(--cq-accent-subtle)] border border-[var(--cq-accent)]/40 flex items-center justify-center text-[var(--cq-accent)] font-bold text-lg">
+            <div className="w-12 h-12 rounded-2xl bg-teal-50 border-2 border-teal-200 flex items-center justify-center text-[#00C2D1] font-montserrat font-extrabold text-xl shadow-sm">
               {profile.level}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-base text-[var(--cq-text)]">{profile.displayName}</h3>
+                <h3 className="font-montserrat font-bold text-base text-[#0B1F2A]">{profile.displayName}</h3>
                 <Badge variant="accent" size="sm">Level {profile.level}</Badge>
               </div>
-              <span className="text-xs text-[var(--cq-text-muted)]">
-                Total XP: <span className="font-mono font-bold text-[var(--cq-accent)]">{profile.xp}</span>
+              <span className="text-xs text-slate-500 font-medium">
+                Total XP: <span className="font-montserrat font-extrabold text-[#F5B942]">{profile.xp} XP</span>
               </span>
             </div>
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] text-[var(--cq-text-muted)] block uppercase font-mono">Streak</span>
-            <span className="font-bold text-sm text-[var(--cq-warning)] flex items-center justify-end gap-1">
-              <Flame className="w-4 h-4 fill-[var(--cq-warning)]" />
+            <span className="text-[10px] text-slate-400 block uppercase font-montserrat font-bold">Daily Streak</span>
+            <span className="font-montserrat font-extrabold text-sm text-orange-600 flex items-center justify-end gap-1">
+              <Flame className="w-4 h-4 fill-orange-500 text-orange-500 animate-pulse" />
               {profile.streakDays} Day(s)
             </span>
           </div>
         </div>
 
         {/* Level Progression Bar */}
-        <div className="space-y-1.5 p-3.5 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-bg)]">
+        <div className="space-y-2 p-4 rounded-2xl border-2 border-slate-100 bg-white shadow-sm">
           <div className="flex justify-between items-center text-xs">
-            <span className="text-[var(--cq-text-muted)]">Level {profile.level} Progress</span>
-            <span className="font-mono text-[var(--cq-accent)]">{xpInCurrentLevel} / {xpNeededForNext} XP</span>
+            <span className="font-montserrat font-bold text-slate-700">Level {profile.level} Progress</span>
+            <span className="font-montserrat font-extrabold text-[#00C2D1]">{xpInCurrentLevel} / {xpNeededForNext} XP</span>
           </div>
-          <ProgressBar value={xpInCurrentLevel} max={xpNeededForNext} variant="accent" size="sm" />
-          <span className="text-[10px] text-[var(--cq-text-muted)] block text-right">
+          <ProgressBar value={xpInCurrentLevel} max={xpNeededForNext} variant="gold" size="md" />
+          <span className="text-[10px] font-montserrat font-medium text-slate-400 block text-right">
             {xpNeededForNext - xpInCurrentLevel} XP required for Level {profile.level + 1}
           </span>
         </div>
 
         {/* Active Quests */}
         <div className="space-y-2.5">
-          <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-text)]">
+          <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#0B1F2A]">
             Active Study Quests
           </span>
           <div className="space-y-2">
@@ -94,26 +95,26 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               return (
                 <div
                   key={quest.id}
-                  className="p-3 rounded-lg border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] flex items-center justify-between gap-3"
+                  className="p-3.5 rounded-xl border-2 border-slate-100 bg-white shadow-sm flex items-center justify-between gap-3"
                 >
                   <div className="space-y-0.5 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-xs text-[var(--cq-text)]">{quest.title}</span>
-                      <Badge variant={isCompleted ? 'success' : 'neutral'} size="sm">
+                      <span className="font-montserrat font-bold text-xs text-[#0B1F2A]">{quest.title}</span>
+                      <Badge variant={isCompleted ? 'success' : 'gold'} size="sm">
                         +{quest.xpReward} XP
                       </Badge>
                     </div>
-                    <p className="text-[11px] text-[var(--cq-text-muted)] leading-relaxed">
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
                       {quest.description}
                     </p>
                   </div>
                   <div>
                     {isCompleted ? (
-                      <span className="text-[var(--cq-success)] text-xs font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-4 h-4" /> Done
+                      <span className="text-emerald-600 text-xs font-montserrat font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-4 h-4" /> Cleared
                       </span>
                     ) : (
-                      <Badge variant="accent" size="sm">In Progress</Badge>
+                      <Badge variant="accent" size="sm">Active</Badge>
                     )}
                   </div>
                 </div>
@@ -124,7 +125,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
         {/* Earned Achievements */}
         <div className="space-y-2.5">
-          <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-text)]">
+          <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#0B1F2A]">
             Earned Badges & Honors
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -133,22 +134,22 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               return (
                 <div
                   key={ach.id}
-                  className={`p-3 rounded-lg border flex items-start gap-2.5 ${
+                  className={`p-3.5 rounded-xl border-2 flex items-start gap-2.5 ${
                     isEarned
-                      ? 'border-[var(--cq-accent)]/50 bg-[var(--cq-accent-subtle)] text-[var(--cq-text)]'
-                      : 'border-[var(--cq-border)]/50 bg-[var(--cq-surface)] text-[var(--cq-text-muted)] opacity-60'
+                      ? 'border-amber-200 bg-amber-50/50 text-[#0B1F2A] shadow-sm'
+                      : 'border-slate-100 bg-slate-50/50 text-slate-400 opacity-60'
                   }`}
                 >
-                  <div className="p-2 rounded-md bg-black/20 shrink-0">
+                  <div className={`p-2 rounded-xl shrink-0 ${isEarned ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-400'}`}>
                     {isEarned ? (
-                      <Award className="w-4 h-4 text-[var(--cq-accent)]" />
+                      <Award className="w-4 h-4" />
                     ) : (
-                      <Lock className="w-4 h-4 text-[var(--cq-text-muted)]" />
+                      <Lock className="w-4 h-4" />
                     )}
                   </div>
                   <div className="space-y-0.5">
-                    <span className="font-semibold text-xs block">{ach.title}</span>
-                    <p className="text-[10px] leading-tight text-[var(--cq-text-muted)]">
+                    <span className="font-montserrat font-bold text-xs block">{ach.title}</span>
+                    <p className="text-[10px] leading-tight text-slate-500">
                       {ach.description}
                     </p>
                   </div>
@@ -160,7 +161,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
         <div className="pt-2 flex justify-end">
           <Button size="sm" variant="secondary" onClick={onClose}>
-            Close Profile
+            CLOSE PROFILE
           </Button>
         </div>
       </div>

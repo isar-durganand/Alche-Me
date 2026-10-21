@@ -8,13 +8,13 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ children, variant = 'default', className = '', ...props }, ref) => {
-    const baseStyles = 'rounded-xl border border-[var(--cq-border)] transition-all overflow-hidden';
+    const baseStyles = 'rounded-2xl transition-all overflow-hidden';
     
     const variantStyles: Record<CardVariant, string> = {
-      default: 'bg-[var(--cq-surface)]',
-      raised: 'bg-[var(--cq-surface-raised)] shadow-md',
+      default: 'bg-white border-2 border-slate-200/80 shadow-sm',
+      raised: 'bg-white border-2 border-slate-200/90 shadow-[0_4px_20px_-2px_rgba(11,31,42,0.06)]',
       interactive:
-        'bg-[var(--cq-surface)] hover:bg-[var(--cq-surface-hover)] hover:border-[var(--cq-accent)] hover:shadow-lg cursor-pointer active:scale-[0.99]',
+        'bg-white border-2 border-slate-200/90 shadow-[0_4px_16px_rgba(11,31,42,0.04)] hover:border-[#00C2D1] hover:shadow-[0_10px_28px_rgba(11,31,42,0.09)] cursor-pointer active:scale-[0.99]',
     };
 
     return (
@@ -32,7 +32,7 @@ Card.displayName = 'Card';
 
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ children, className = '', ...props }, ref) => (
-    <div ref={ref} className={`p-5 pb-3 border-b border-[var(--cq-border)]/60 space-y-1.5 ${className}`} {...props}>
+    <div ref={ref} className={`p-5 pb-3 border-b border-slate-100 space-y-1.5 ${className}`} {...props}>
       {children}
     </div>
   )
@@ -41,7 +41,7 @@ CardHeader.displayName = 'CardHeader';
 
 export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
   ({ children, className = '', ...props }, ref) => (
-    <h3 ref={ref} className={`font-bold text-base text-[var(--cq-text)] tracking-tight ${className}`} {...props}>
+    <h3 ref={ref} className={`font-montserrat font-bold text-base text-[#0B1F2A] tracking-tight ${className}`} {...props}>
       {children}
     </h3>
   )
@@ -50,7 +50,7 @@ CardTitle.displayName = 'CardTitle';
 
 export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
   ({ children, className = '', ...props }, ref) => (
-    <p ref={ref} className={`text-xs text-[var(--cq-text-muted)] leading-relaxed ${className}`} {...props}>
+    <p ref={ref} className={`text-xs text-[#5A6B7C] leading-relaxed ${className}`} {...props}>
       {children}
     </p>
   )
@@ -68,7 +68,7 @@ CardContent.displayName = 'CardContent';
 
 export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ children, className = '', ...props }, ref) => (
-    <div ref={ref} className={`p-4 pt-3 border-t border-[var(--cq-border)]/60 bg-[var(--cq-surface-raised)]/40 flex items-center justify-between gap-3 text-xs ${className}`} {...props}>
+    <div ref={ref} className={`p-4 pt-3 border-t border-slate-100 bg-slate-50/70 flex items-center justify-between gap-3 text-xs ${className}`} {...props}>
       {children}
     </div>
   )

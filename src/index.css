@@ -1,53 +1,77 @@
 @import "tailwindcss";
 
-:root {
-  color-scheme: dark;
-  --cq-bg: #101317;
-  --cq-surface: #171c22;
-  --cq-surface-raised: #202730;
-  --cq-surface-hover: #262e3a;
-  --cq-border: #303944;
-  --cq-border-focus: #56b4e9;
-  --cq-text: #f3f5f7;
-  --cq-text-muted: #a9b2bd;
-  --cq-accent: #56b4e9;
-  --cq-accent-hover: #419cd0;
-  --cq-accent-subtle: rgba(86, 180, 233, 0.12);
-  --cq-accent-strong: #168ac4;
-  --cq-success: #55b889;
-  --cq-success-subtle: rgba(85, 184, 137, 0.12);
-  --cq-warning: #e7b45a;
-  --cq-warning-subtle: rgba(231, 180, 90, 0.12);
-  --cq-danger: #e47777;
-  --cq-danger-subtle: rgba(228, 119, 119, 0.12);
-  --cq-focus: #8bd3ff;
-  
-  --cq-radius-sm: 6px;
-  --cq-radius-md: 10px;
-  --cq-radius-lg: 16px;
-  --cq-radius-full: 9999px;
-  
-  --cq-space-1: 4px;
-  --cq-space-2: 8px;
-  --cq-space-3: 12px;
-  --cq-space-4: 16px;
-  --cq-space-6: 24px;
-  --cq-space-8: 32px;
+@layer base {
+  :root {
+    color-scheme: light;
+    /* Alche-Me Ivory Game Canvas Tokens */
+    --cq-bg: #F7F8FA;                  /* Clean Ivory background */
+    --cq-surface: #FFFFFF;             /* Crisp white card surface */
+    --cq-surface-raised: #EDF2F7;      /* Subtle game inset / elevated surface */
+    --cq-surface-hover: #E2E8F0;       /* Interactive hover */
+    --cq-border: #E2E8F0;              /* Crisp card border */
+    --cq-border-focus: #00C2D1;        /* Cyan focus ring */
+    --cq-text: #0B1F2A;                /* Deep Navy / Charcoal game text */
+    --cq-text-muted: #5A6B7C;          /* Slate secondary text */
+    
+    /* Game Vibe Accents */
+    --cq-accent: #00C2D1;              /* Vibrant Teal / Cyan */
+    --cq-accent-hover: #00ADB9;
+    --cq-accent-subtle: rgba(0, 194, 209, 0.12);
+    --cq-accent-strong: #008E9B;        /* 3D button border depth */
+    
+    --cq-gold: #F5B942;                /* Amber / Gold Coin / Streak */
+    --cq-gold-strong: #D99926;         /* 3D amber button depth */
+    --cq-gold-subtle: rgba(245, 185, 66, 0.15);
 
-  --cq-transition-fast: 150ms ease;
-  --cq-transition-base: 250ms ease;
+    --cq-success: #10B981;             /* Emerald game pass */
+    --cq-success-strong: #059669;
+    --cq-success-subtle: rgba(16, 185, 129, 0.14);
+    
+    --cq-warning: #F59E0B;             /* Warning flame */
+    --cq-warning-subtle: rgba(245, 158, 11, 0.14);
+    
+    --cq-danger: #EF4444;              /* Coral / Danger */
+    --cq-danger-strong: #DC2626;
+    --cq-danger-subtle: rgba(239, 68, 68, 0.14);
+    
+    --cq-focus: #00C2D1;
+    
+    --cq-radius-sm: 8px;
+    --cq-radius-md: 12px;
+    --cq-radius-lg: 18px;
+    --cq-radius-full: 9999px;
+    
+    --cq-space-1: 4px;
+    --cq-space-2: 8px;
+    --cq-space-3: 12px;
+    --cq-space-4: 16px;
+    --cq-space-6: 24px;
+    --cq-space-8: 32px;
+
+    --cq-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --cq-transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* High-contrast mode override */
+  .high-contrast {
+    --cq-bg: #FFFFFF;
+    --cq-surface: #FFFFFF;
+    --cq-surface-raised: #E2E8F0;
+    --cq-border: #0B1F2A;
+    --cq-text: #000000;
+    --cq-text-muted: #1E293B;
+    --cq-accent: #008E9B;
+    --cq-focus: #000000;
+  }
 }
 
-/* High-contrast mode override */
-.high-contrast {
-  --cq-bg: #000000;
-  --cq-surface: #0a0d11;
-  --cq-surface-raised: #141a22;
-  --cq-border: #526377;
-  --cq-text: #ffffff;
-  --cq-text-muted: #c8d1dc;
-  --cq-accent: #78caff;
-  --cq-focus: #ffffff;
+.font-montserrat {
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+}
+
+.font-game {
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 body {
@@ -57,6 +81,86 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
+}
+
+/* 3D Tactile Game Buttons */
+.btn-3d-teal {
+  background-color: #00C2D1;
+  color: #FFFFFF;
+  border-bottom: 4px solid #008E9B;
+  transition: all 0.15s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+}
+.btn-3d-teal:hover {
+  background-color: #00D5E5;
+}
+.btn-3d-teal:active {
+  border-bottom-width: 0px;
+  transform: translateY(4px);
+}
+
+.btn-3d-gold {
+  background-color: #F5B942;
+  color: #0B1F2A;
+  border-bottom: 4px solid #D99926;
+  transition: all 0.15s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+}
+.btn-3d-gold:hover {
+  background-color: #F8C760;
+}
+.btn-3d-gold:active {
+  border-bottom-width: 0px;
+  transform: translateY(4px);
+}
+
+.btn-3d-emerald {
+  background-color: #10B981;
+  color: #FFFFFF;
+  border-bottom: 4px solid #059669;
+  transition: all 0.15s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+}
+.btn-3d-emerald:hover {
+  background-color: #1ed194;
+}
+.btn-3d-emerald:active {
+  border-bottom-width: 0px;
+  transform: translateY(4px);
+}
+
+.btn-3d-white {
+  background-color: #FFFFFF;
+  color: #0B1F2A;
+  border: 2px solid #E2E8F0;
+  border-bottom: 4px solid #CBD5E1;
+  transition: all 0.15s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+}
+.btn-3d-white:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+.btn-3d-white:active {
+  border-bottom-width: 2px;
+  transform: translateY(2px);
+}
+
+/* Game Card Styles */
+.game-card {
+  background-color: #FFFFFF;
+  border: 2px solid #E2E8F0;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px -2px rgba(11, 31, 42, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.game-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 24px -4px rgba(11, 31, 42, 0.08);
 }
 
 /* Accessible Focus Ring */
@@ -86,7 +190,7 @@ body {
   background: var(--cq-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--cq-border);
+  background: #CBD5E1;
   border-radius: var(--cq-radius-sm);
 }
 ::-webkit-scrollbar-thumb:hover {

@@ -6,7 +6,8 @@ import {
   CheckCircle2, 
   BookOpen, 
   ShieldCheck, 
-  FileText 
+  FileText,
+  Zap 
 } from 'lucide-react';
 import { CurriculumLevel } from '../../data/curriculumData';
 import { Modal, Button, Badge } from '../../components/ui';
@@ -36,57 +37,57 @@ export const MissionBriefingModal: React.FC<MissionBriefingModalProps> = ({
         {/* Badges bar */}
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="accent">Difficulty: {level.difficulty}</Badge>
-          <Badge variant="success">Reward: +{level.xpReward} XP</Badge>
+          <Badge variant="gold">Reward: +{level.xpReward} XP</Badge>
           <Badge variant="neutral">Curriculum Sourced (MRIIRS)</Badge>
         </div>
 
         {/* Mission Context */}
         <div className="space-y-1.5">
-          <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-accent)]">
+          <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1]">
             Mission Objective
           </span>
-          <p className="p-3.5 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] text-[var(--cq-text)] leading-relaxed">
+          <p className="p-3.5 rounded-2xl border-2 border-slate-100 bg-slate-50/70 text-[#0B1F2A] leading-relaxed text-sm font-medium">
             {level.summary}
           </p>
         </div>
 
         {/* Learning Sequence Checklist */}
         <div className="space-y-1.5">
-          <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-accent)]">
+          <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1]">
             Mission Sequence
           </span>
-          <div className="space-y-2 p-3.5 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-bg)]">
-            <div className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-[var(--cq-surface-raised)] border border-[var(--cq-border)] flex items-center justify-center font-mono text-[10px] text-[var(--cq-accent)] shrink-0">
+          <div className="space-y-2.5 p-4 rounded-2xl border-2 border-slate-100 bg-white shadow-sm">
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center font-montserrat font-bold text-xs text-[#00C2D1] shrink-0">
                 1
               </span>
               <div>
-                <span className="font-semibold text-[var(--cq-text)] block">Scientific Theory & Equations</span>
-                <span className="text-[var(--cq-text-muted)] text-[11px]">
+                <span className="font-montserrat font-bold text-xs text-[#0B1F2A] block">Scientific Principles & Equations</span>
+                <span className="text-slate-500 text-[11px]">
                   Review curated foundational principles and physical equations.
                 </span>
               </div>
             </div>
 
-            <div className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-[var(--cq-surface-raised)] border border-[var(--cq-border)] flex items-center justify-center font-mono text-[10px] text-[var(--cq-accent)] shrink-0">
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center font-montserrat font-bold text-xs text-amber-700 shrink-0">
                 2
               </span>
               <div>
-                <span className="font-semibold text-[var(--cq-text)] block">Curated Concept Assessment</span>
-                <span className="text-[var(--cq-text-muted)] text-[11px]">
+                <span className="font-montserrat font-bold text-xs text-[#0B1F2A] block">Concept Quiz & Assessment</span>
+                <span className="text-slate-500 text-[11px]">
                   Solve real engineering chemistry questions with instant explanatory feedback.
                 </span>
               </div>
             </div>
 
-            <div className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-[var(--cq-surface-raised)] border border-[var(--cq-border)] flex items-center justify-center font-mono text-[10px] text-[var(--cq-accent)] shrink-0">
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center font-montserrat font-bold text-xs text-emerald-700 shrink-0">
                 3
               </span>
               <div>
-                <span className="font-semibold text-[var(--cq-text)] block">Mastery Score & Local Progress Save</span>
-                <span className="text-[var(--cq-text-muted)] text-[11px]">
+                <span className="font-montserrat font-bold text-xs text-[#0B1F2A] block">Mastery Score & Save Progression</span>
+                <span className="text-slate-500 text-[11px]">
                   Earn XP rewards and unlock the next sequence in the curriculum.
                 </span>
               </div>
@@ -95,17 +96,17 @@ export const MissionBriefingModal: React.FC<MissionBriefingModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-2 flex justify-end gap-2.5 border-t border-[var(--cq-border)]/60">
-          <Button size="sm" variant="ghost" onClick={onClose}>
-            Postpone
+        <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100">
+          <Button size="sm" variant="secondary" onClick={onClose}>
+            POSTPONE
           </Button>
           <Button
             size="sm"
             variant="primary"
-            rightIcon={<Play className="w-4 h-4" />}
+            rightIcon={<Play className="w-4 h-4 fill-current" />}
             onClick={() => onLaunch(level)}
           >
-            Launch Activity
+            LAUNCH MISSION
           </Button>
         </div>
       </div>

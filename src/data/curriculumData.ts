@@ -59,7 +59,7 @@ export const CURRICULUM_WORLDS: CurriculumWorld[] = [
     title: 'Discovery Academy',
     subtitle: 'Matter, Units & Laboratory Hygiene',
     summary: 'The gateway world for all aspiring chemists. Master standard laboratory glassware, precise volumetric measurement, safety pictograms, and fundamental SI dimensional consistency.',
-    thumbnail: '/assets/worlds/Alche-Me_ Six Scientific Worlds.png',
+    thumbnail: '/assets/worlds/world-1.png',
     levels: [
       {
         id: 'da-lvl-1',
@@ -186,7 +186,7 @@ export const CURRICULUM_WORLDS: CurriculumWorld[] = [
     title: 'Atomic Frontier',
     subtitle: 'Quantum Orbitals & Periodic Trends',
     summary: 'Delve into atomic quantum numbers, subshell electron capacities, Hund’s rule of maximum multiplicity, and Pauling electronegativity gradients across the 118 elements.',
-    thumbnail: '/assets/worlds/Alche-Me_ Six Scientific Worlds.png',
+    thumbnail: '/assets/worlds/world-2.png',
     prerequisiteWorldId: 'discovery-academy',
     levels: [
       {
@@ -291,7 +291,7 @@ export const CURRICULUM_WORLDS: CurriculumWorld[] = [
     title: 'Bonding & Molecular Worlds',
     subtitle: 'VSEPR, Drago’s Rule & 3D Conformations',
     summary: 'Analyze lone-pair repulsions in VSEPR hydrides (H₂O at 104.5°, H₂S at 92.1°, H₂Se at 91.0°). Explore octahedral coordination complexes and Drago’s hybridization threshold.',
-    thumbnail: '/assets/worlds/Alche-Me_ Six Scientific Worlds.png',
+    thumbnail: '/assets/worlds/world-3.png',
     prerequisiteWorldId: 'atomic-frontier',
     levels: []
   },
@@ -301,7 +301,7 @@ export const CURRICULUM_WORLDS: CurriculumWorld[] = [
     title: 'Reaction Forge',
     subtitle: 'Stoichiometry & Redox Potentiometry',
     summary: 'Balance complex multi-electron half-reactions and quantify ferrous-ion oxidation with dichromate using calomel-platinum electrode potentiometry.',
-    thumbnail: '/assets/worlds/Alche-Me_ Six Scientific Worlds.png',
+    thumbnail: '/assets/worlds/world-4.png',
     prerequisiteWorldId: 'bonding-worlds',
     levels: []
   },
@@ -311,7 +311,7 @@ export const CURRICULUM_WORLDS: CurriculumWorld[] = [
     title: 'Analytical District',
     subtitle: 'Titrimetry & Water Quality Analysis',
     summary: 'Conductometric acid-base curves, permanent and temporary water hardness determination, and phenolphthalein-methyl orange alkalinity quantification.',
-    thumbnail: '/assets/worlds/Alche-Me_ Six Scientific Worlds.png',
+    thumbnail: '/assets/worlds/world-5.png',
     prerequisiteWorldId: 'reaction-forge',
     levels: []
   },
@@ -321,7 +321,7 @@ export const CURRICULUM_WORLDS: CurriculumWorld[] = [
     title: 'Materials & Energy Frontier',
     subtitle: 'Lubricants, Polymers & Fuels',
     summary: 'Industrial engineering practicals: Redwood viscometric calibration, Pensky-Martens flash & fire points, coal proximate analysis, and Bakelite resin condensation.',
-    thumbnail: '/assets/worlds/Alche-Me_ Six Scientific Worlds.png',
+    thumbnail: '/assets/worlds/world-6.png',
     prerequisiteWorldId: 'analytical-district',
     levels: []
   }

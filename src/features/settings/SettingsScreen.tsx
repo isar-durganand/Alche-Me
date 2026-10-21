@@ -41,7 +41,7 @@ export const SettingsScreen: React.FC = () => {
       setActionSuccess('High contrast accessibility palette applied.');
     } else {
       document.documentElement.classList.remove('high-contrast');
-      setActionSuccess('Default graphite dark mode restored.');
+      setActionSuccess('Standard Ivory game mode restored.');
     }
   };
 
@@ -76,12 +76,12 @@ export const SettingsScreen: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-300">
       <div>
-        <h1 className="text-2xl font-black text-[var(--cq-text)] flex items-center gap-2.5">
-          <SettingsIcon className="w-6 h-6 text-[var(--cq-accent)]" />
+        <h1 className="text-2xl sm:text-3xl font-montserrat font-extrabold text-[#0B1F2A] flex items-center gap-2.5">
+          <SettingsIcon className="w-6 h-6 text-[#00C2D1]" />
           System Settings & Accessibility
         </h1>
-        <p className="text-xs text-[var(--cq-text-muted)]">
-          Configure visual comfort, hardware acceleration, and local telemetry
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Configure visual comfort, audio feedback, hardware acceleration, and local telemetry
         </p>
       </div>
 

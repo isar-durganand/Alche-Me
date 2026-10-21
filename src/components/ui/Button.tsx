@@ -1,7 +1,7 @@
 import React, { forwardRef, ButtonHTMLAttributes } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'gold' | 'success';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -29,25 +29,29 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-lg transition-colors select-none cursor-pointer focus-visible:outline-2 focus-visible:outline-[var(--cq-focus)] focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none active:scale-[0.98]';
+      'inline-flex items-center justify-center font-montserrat font-bold rounded-xl transition-all select-none cursor-pointer focus-visible:outline-2 focus-visible:outline-[var(--cq-focus)] focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none tracking-tight';
 
     const sizeStyles: Record<ButtonSize, string> = {
-      sm: 'text-xs px-2.5 py-1.5 gap-1.5 min-h-[32px]',
-      md: 'text-sm px-3.5 py-2 gap-2 min-h-[40px]',
-      lg: 'text-base px-5 py-2.5 gap-2.5 min-h-[48px]',
+      sm: 'text-xs px-3 py-1.5 gap-1.5 min-h-[34px]',
+      md: 'text-sm px-4 py-2 gap-2 min-h-[42px]',
+      lg: 'text-base px-6 py-2.5 gap-2.5 min-h-[50px]',
     };
 
     const variantStyles: Record<ButtonVariant, string> = {
       primary:
-        'bg-[var(--cq-accent)] text-[#101317] font-semibold hover:bg-[var(--cq-accent-hover)] active:bg-[var(--cq-accent-strong)] shadow-sm',
+        'bg-[#00C2D1] text-white border-b-4 border-[#008E9B] hover:bg-[#00D5E5] active:border-b-0 active:translate-y-1 shadow-sm',
+      gold:
+        'bg-[#F5B942] text-[#0B1F2A] border-b-4 border-[#D99926] hover:bg-[#F8C760] active:border-b-0 active:translate-y-1 shadow-sm font-extrabold',
+      success:
+        'bg-[#10B981] text-white border-b-4 border-[#059669] hover:bg-[#1ed194] active:border-b-0 active:translate-y-1 shadow-sm',
       secondary:
-        'bg-[var(--cq-surface-raised)] text-[var(--cq-text)] hover:bg-[var(--cq-surface-hover)] border border-[var(--cq-border)]',
+        'bg-white text-[#0B1F2A] border-2 border-slate-200 border-b-4 border-b-slate-300 hover:bg-slate-50 hover:border-slate-300 active:border-b-2 active:translate-y-0.5 shadow-sm',
       outline:
-        'bg-transparent text-[var(--cq-text)] border border-[var(--cq-border)] hover:border-[var(--cq-accent)] hover:text-[var(--cq-accent)] hover:bg-[var(--cq-accent-subtle)]',
+        'bg-white/80 text-slate-700 border-2 border-slate-200 hover:border-[#00C2D1] hover:text-[#00C2D1] hover:bg-teal-50/50',
       ghost:
-        'bg-transparent text-[var(--cq-text-muted)] hover:text-[var(--cq-text)] hover:bg-[var(--cq-surface-raised)]',
+        'bg-transparent text-slate-600 hover:text-[#0B1F2A] hover:bg-slate-100/80',
       danger:
-        'bg-[var(--cq-danger)] text-white hover:opacity-90 active:opacity-100 shadow-sm',
+        'bg-[#EF4444] text-white border-b-4 border-[#DC2626] hover:bg-red-500 active:border-b-0 active:translate-y-1 shadow-sm',
     };
 
     return (

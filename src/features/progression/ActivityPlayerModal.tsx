@@ -8,7 +8,9 @@ import {
   Award, 
   Sparkles,
   RotateCcw,
-  Check
+  Check,
+  Zap,
+  Star
 } from 'lucide-react';
 import { CurriculumLevel } from '../../data/curriculumData';
 import { progressAdapter } from '../../infrastructure/persistence/progressAdapter';
@@ -89,50 +91,50 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
         {/* Phase 1: Lesson Presentation */}
         {phase === 'lesson' && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="p-4 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] space-y-2">
-              <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-accent)]">
+            <div className="p-4 rounded-2xl border-2 border-slate-100 bg-slate-50/70 space-y-2">
+              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1]">
                 Core Theoretical Principle
               </span>
-              <p className="text-[var(--cq-text)] leading-relaxed">
+              <p className="text-[#0B1F2A] leading-relaxed text-sm font-medium">
                 {lesson.conceptSummary}
               </p>
             </div>
 
             <div className="space-y-2">
-              <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-text)]">
+              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#0B1F2A]">
                 Key Learning Objectives
               </span>
               <ul className="space-y-2">
                 {lesson.bulletPoints.map((point, idx) => (
                   <li
                     key={idx}
-                    className="flex items-start gap-2.5 p-3 rounded-lg border border-[var(--cq-border)]/70 bg-[var(--cq-bg)] text-[var(--cq-text)] leading-relaxed"
+                    className="flex items-start gap-2.5 p-3.5 rounded-xl border-2 border-slate-100 bg-white shadow-sm text-[#0B1F2A] leading-relaxed"
                   >
-                    <Check className="w-4 h-4 text-[var(--cq-accent)] shrink-0 mt-0.5" />
-                    <span>{point}</span>
+                    <Check className="w-4 h-4 text-[#00C2D1] shrink-0 mt-0.5" />
+                    <span className="text-xs">{point}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             {lesson.keyEquation && (
-              <div className="p-3.5 rounded-xl border border-[var(--cq-accent)]/40 bg-[var(--cq-accent-subtle)] space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--cq-accent)]">
+              <div className="p-4 rounded-2xl border-2 border-teal-100 bg-teal-50/60 space-y-1">
+                <span className="text-[10px] font-montserrat font-extrabold uppercase tracking-wider text-teal-800">
                   Scientific Formula & Equation
                 </span>
-                <div className="font-mono font-bold text-sm text-[var(--cq-text)]">
+                <div className="font-mono font-bold text-sm text-[#0B1F2A]">
                   {lesson.keyEquation}
                 </div>
                 {lesson.accessibleText && (
-                  <div className="text-[11px] text-[var(--cq-text-muted)]">
+                  <div className="text-[11px] text-teal-700">
                     Note: {lesson.accessibleText}
                   </div>
                 )}
               </div>
             )}
 
-            <div className="pt-2 flex justify-between items-center border-t border-[var(--cq-border)]/60">
-              <span className="text-[11px] text-[var(--cq-text-muted)] font-mono">
+            <div className="pt-3 flex justify-between items-center border-t border-slate-100">
+              <span className="text-[11px] font-montserrat font-bold text-slate-500">
                 {quiz.length} Assessment Questions Awaiting
               </span>
               <Button
@@ -141,7 +143,7 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
                 rightIcon={<ArrowRight className="w-4 h-4" />}
                 onClick={() => setPhase('quiz')}
               >
-                Proceed to Assessment
+                PROCEED TO ASSESSMENT
               </Button>
             </div>
           </div>
@@ -150,11 +152,11 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
         {/* Phase 2: Assessment Quiz */}
         {phase === 'quiz' && (
           <div className="space-y-5 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--cq-border)]/60">
-              <span className="font-semibold text-xs text-[var(--cq-text)]">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span className="font-montserrat font-bold text-xs text-[#0B1F2A]">
                 Curated Concept Questions ({quiz.length} Total)
               </span>
-              <span className="text-[11px] text-[var(--cq-accent)] font-mono">
+              <span className="text-xs font-montserrat font-extrabold text-[#00C2D1]">
                 {Object.keys(selectedAnswers).length} / {quiz.length} Answered
               </span>
             </div>
@@ -163,13 +165,13 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
               {quiz.map((q, qIdx) => (
                 <div
                   key={q.id}
-                  className="p-4 rounded-xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] space-y-3"
+                  className="p-5 rounded-2xl border-2 border-slate-100 bg-slate-50/70 space-y-3"
                 >
-                  <div className="flex items-start gap-2">
-                    <span className="font-mono font-bold text-[var(--cq-accent)] text-xs">
+                  <div className="flex items-start gap-2.5">
+                    <span className="font-montserrat font-extrabold text-[#00C2D1] text-sm">
                       Q{qIdx + 1}.
                     </span>
-                    <h4 className="font-semibold text-sm text-[var(--cq-text)] leading-snug">
+                    <h4 className="font-montserrat font-bold text-sm text-[#0B1F2A] leading-snug">
                       {q.question}
                     </h4>
                   </div>
@@ -182,21 +184,21 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
                           key={optIdx}
                           type="button"
                           onClick={() => handleSelectOption(q.id, optIdx)}
-                          className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all cursor-pointer select-none ${
+                          className={`w-full flex items-center justify-between p-3.5 rounded-xl border-2 text-left transition-all cursor-pointer select-none ${
                             isSelected
-                              ? 'border-[var(--cq-accent)] bg-[var(--cq-accent-subtle)] text-[var(--cq-text)] font-medium shadow-sm'
-                              : 'border-[var(--cq-border)] bg-[var(--cq-surface)] hover:bg-[var(--cq-surface-hover)] text-[var(--cq-text-muted)] hover:text-white'
+                              ? 'border-[#00C2D1] bg-teal-50/80 text-[#0B1F2A] font-montserrat font-bold shadow-sm'
+                              : 'border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700'
                           }`}
                         >
                           <span className="text-xs leading-relaxed">{opt}</span>
                           <span
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-3 ${
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ml-3 ${
                               isSelected
-                                ? 'border-[var(--cq-accent)] bg-[var(--cq-accent)] text-black'
-                                : 'border-[var(--cq-border)]'
+                                ? 'border-[#00C2D1] bg-[#00C2D1] text-white'
+                                : 'border-slate-300'
                             }`}
                           >
-                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
+                            {isSelected && <span className="w-2 h-2 rounded-full bg-white" />}
                           </span>
                         </button>
                       );
@@ -206,9 +208,9 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
               ))}
             </div>
 
-            <div className="pt-2 flex justify-between items-center border-t border-[var(--cq-border)]/60">
-              <Button size="sm" variant="ghost" onClick={() => setPhase('lesson')}>
-                Back to Lesson
+            <div className="pt-3 flex justify-between items-center border-t border-slate-100">
+              <Button size="sm" variant="secondary" onClick={() => setPhase('lesson')}>
+                BACK TO LESSON
               </Button>
               <Button
                 variant="primary"
@@ -216,7 +218,7 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
                 disabled={!isAllAnswered}
                 onClick={handleSubmitQuiz}
               >
-                Submit Answers
+                SUBMIT ANSWERS
               </Button>
             </div>
           </div>
@@ -226,30 +228,32 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
         {phase === 'results' && (
           <div className="space-y-5 animate-in fade-in duration-200">
             {/* Score Summary Box */}
-            <div className="p-5 rounded-2xl border border-[var(--cq-border)] bg-[var(--cq-surface-raised)] text-center space-y-3">
-              <div className="inline-flex p-3 rounded-full bg-[var(--cq-accent-subtle)] border border-[var(--cq-accent)]/30 text-[var(--cq-accent)]">
-                <Award className="w-8 h-8" />
+            <div className="p-6 rounded-3xl border-2 border-slate-200/90 bg-white text-center space-y-3 shadow-sm">
+              <div className="inline-flex p-3 rounded-2xl bg-teal-50 border-2 border-teal-200 text-[#00C2D1] shadow-sm">
+                <Award className="w-10 h-10" />
               </div>
-              <h3 className="font-extrabold text-xl text-[var(--cq-text)]">
+              <h3 className="font-montserrat font-extrabold text-2xl text-[#0B1F2A]">
                 {score >= 90 ? 'Mission Mastered!' : score >= 60 ? 'Mission Completed!' : 'Review Recommended'}
               </h3>
-              <div className="flex items-center justify-center gap-4 text-xs">
+              <div className="flex items-center justify-center gap-6 text-xs pt-1">
                 <div>
-                  <span className="text-[var(--cq-text-muted)] block text-[10px]">Assessment Score</span>
-                  <span className="text-2xl font-black font-mono text-[var(--cq-accent)]">{score}%</span>
+                  <span className="text-slate-400 block text-[10px] font-montserrat font-bold uppercase">Assessment Score</span>
+                  <span className="text-3xl font-montserrat font-extrabold text-[#00C2D1]">{score}%</span>
                 </div>
-                <div className="w-px h-8 bg-[var(--cq-border)]" />
+                <div className="w-px h-10 bg-slate-200" />
                 <div>
-                  <span className="text-[var(--cq-text-muted)] block text-[10px]">XP Earned</span>
-                  <span className="text-2xl font-black font-mono text-[var(--cq-success)]">+{level.xpReward}</span>
+                  <span className="text-slate-400 block text-[10px] font-montserrat font-bold uppercase">XP Earned</span>
+                  <span className="text-3xl font-montserrat font-extrabold text-[#F5B942] flex items-center justify-center gap-1">
+                    <Zap className="w-5 h-5 fill-current" /> +{level.xpReward}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Answer-by-Answer Review */}
             <div className="space-y-3">
-              <span className="font-bold text-xs uppercase tracking-wider text-[var(--cq-text)]">
-                Pedagogical Solution Breakdown
+              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#0B1F2A]">
+                Solution Breakdown & Explanations
               </span>
               {quiz.map((q, qIdx) => {
                 const userAns = selectedAnswers[q.id];
@@ -257,18 +261,18 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
                 return (
                   <div
                     key={q.id}
-                    className={`p-3.5 rounded-xl border ${
-                      isCorrect ? 'border-[var(--cq-success)]/40 bg-[var(--cq-success-subtle)]' : 'border-[var(--cq-danger)]/40 bg-[var(--cq-danger-subtle)]'
+                    className={`p-4 rounded-2xl border-2 ${
+                      isCorrect ? 'border-emerald-200 bg-emerald-50/60' : 'border-rose-200 bg-rose-50/60'
                     } space-y-2`}
                   >
                     <div className="flex items-start gap-2">
                       {isCorrect ? (
-                        <CheckCircle2 className="w-4 h-4 text-[var(--cq-success)] shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-[var(--cq-danger)] shrink-0 mt-0.5" />
+                        <XCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                       )}
                       <div>
-                        <span className="font-semibold text-xs text-[var(--cq-text)]">
+                        <span className="font-montserrat font-bold text-xs text-[#0B1F2A]">
                           Q{qIdx + 1}: {q.question}
                         </span>
                       </div>
@@ -276,20 +280,20 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
 
                     <div className="text-[11px] space-y-1 pl-6">
                       <div>
-                        <span className="text-[var(--cq-text-muted)]">Your choice: </span>
-                        <span className={isCorrect ? 'text-[var(--cq-success)] font-medium' : 'text-[var(--cq-danger)] font-medium'}>
+                        <span className="text-slate-500">Your choice: </span>
+                        <span className={isCorrect ? 'text-emerald-700 font-bold' : 'text-rose-700 font-bold'}>
                           {q.options[userAns]}
                         </span>
                       </div>
                       {!isCorrect && (
                         <div>
-                          <span className="text-[var(--cq-text-muted)]">Correct choice: </span>
-                          <span className="text-[var(--cq-success)] font-semibold">
+                          <span className="text-slate-500">Correct choice: </span>
+                          <span className="text-emerald-700 font-bold">
                             {q.options[q.correctIndex]}
                           </span>
                         </div>
                       )}
-                      <div className="pt-1 text-[var(--cq-text)] leading-relaxed italic bg-black/20 p-2 rounded">
+                      <div className="pt-1.5 text-slate-700 leading-relaxed italic bg-white/80 p-2.5 rounded-xl border border-slate-200/60">
                         💡 {q.explanation}
                       </div>
                     </div>
@@ -298,12 +302,12 @@ export const ActivityPlayerModal: React.FC<ActivityPlayerModalProps> = ({
               })}
             </div>
 
-            <div className="pt-2 flex justify-between items-center border-t border-[var(--cq-border)]/60">
-              <Button size="sm" variant="ghost" leftIcon={<RotateCcw className="w-3.5 h-3.5" />} onClick={handleResetQuiz}>
-                Retake Assessment
+            <div className="pt-3 flex justify-between items-center border-t border-slate-100">
+              <Button size="sm" variant="secondary" leftIcon={<RotateCcw className="w-3.5 h-3.5" />} onClick={handleResetQuiz}>
+                RETAKE QUIZ
               </Button>
               <Button variant="primary" size="md" onClick={handleFinish}>
-                Finish Mission & Return
+                FINISH MISSION
               </Button>
             </div>
           </div>

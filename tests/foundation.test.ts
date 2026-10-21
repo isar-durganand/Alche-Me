@@ -29,13 +29,13 @@ describe('Alche-Me Foundation Test Suite', () => {
     expect(fs.existsSync(cssPath)).toBe(true);
     const cssContent = fs.readFileSync(cssPath, 'utf-8');
 
-    expect(cssContent).toContain('--cq-bg: #101317');
-    expect(cssContent).toContain('--cq-surface: #171c22');
-    expect(cssContent).toContain('--cq-border: #303944');
-    expect(cssContent).toContain('--cq-text: #f3f5f7');
-    expect(cssContent).toContain('--cq-accent: #56b4e9');
-    expect(cssContent).toContain('--cq-success: #55b889');
-    expect(cssContent).toContain('--cq-danger: #e47777');
+    expect(cssContent).toContain('--cq-bg: #F7F8FA');
+    expect(cssContent).toContain('--cq-surface: #FFFFFF');
+    expect(cssContent).toContain('--cq-border: #E2E8F0');
+    expect(cssContent).toContain('--cq-text: #0B1F2A');
+    expect(cssContent).toContain('--cq-accent: #00C2D1');
+    expect(cssContent).toContain('--cq-success: #10B981');
+    expect(cssContent).toContain('--cq-danger: #EF4444');
   });
 
   it('should have all manifest runtime assets present on disk in public/assets', () => {

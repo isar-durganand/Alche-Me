@@ -63,10 +63,10 @@ export const Tabs: React.FC<TabsProps> = ({
             tabIndex={isActive ? 0 : -1}
             onClick={() => onChange(tab.id)}
             onKeyDown={(e) => handleKeyDown(e, idx)}
-            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-[var(--cq-focus)] ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-montserrat rounded-lg transition-all whitespace-nowrap cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-[var(--cq-focus)] ${
               isActive
-                ? 'bg-[var(--cq-accent)] text-[#101317] font-semibold shadow-sm'
-                : 'text-[var(--cq-text-muted)] hover:text-[var(--cq-text)] hover:bg-[var(--cq-surface-hover)]'
+                ? 'bg-[#00C2D1] text-white font-bold shadow-sm'
+                : 'text-slate-600 hover:text-[#0B1F2A] hover:bg-white font-semibold'
             }`}
           >
             {tab.icon && <span className="shrink-0">{tab.icon}</span>}
@@ -74,7 +74,7 @@ export const Tabs: React.FC<TabsProps> = ({
             {tab.badge !== undefined && (
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  isActive ? 'bg-black/20 text-[#101317]' : 'bg-[var(--cq-border)] text-[var(--cq-text-muted)]'
+                  isActive ? 'bg-white/20 text-white font-bold' : 'bg-slate-200 text-slate-700'
                 }`}
               >
                 {tab.badge}
