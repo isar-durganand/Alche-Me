@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { ClassificationActivityConfig, ClassificationItem } from '../../../domain/types/curriculum';
 import { Button, Badge } from '../../../components/ui';
+import { soundEngine } from '../../../infrastructure/audio/soundEngine';
+import { LaboratoryWorkbenchVisualizer } from './LaboratoryWorkbenchVisualizer';
 
 export interface ClassificationActivityProps {
   config: ClassificationActivityConfig;
@@ -31,6 +33,7 @@ export const ClassificationActivity: React.FC<ClassificationActivityProps> = ({
 
   const handlePlaceItem = (itemId: string, categoryId: string) => {
     if (submitted) return;
+    soundEngine.playTap();
     setPlacements((prev) => ({
       ...prev,
       [itemId]: categoryId,
@@ -91,6 +94,9 @@ export const ClassificationActivity: React.FC<ClassificationActivityProps> = ({
           )}
         </div>
       </div>
+
+      {/* Interactive Apparatus Simulation Stage */}
+      <LaboratoryWorkbenchVisualizer />
 
       {/* Target Category Bins */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

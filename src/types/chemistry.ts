@@ -150,6 +150,14 @@ export interface PeriodicElement {
   electron_configuration: string;
   subshells: { subshell: string; count: number; capacity: number }[];
   summary: string;
+  melting_point?: number | null;
+  boiling_point?: number | null;
+  density?: number | null;
+  shells?: number[];
+  flame_color?: string | null;
+  flame_name?: string | null;
+  appearance?: string;
+  discovered_by?: string;
 }
 
 export interface IRBand {

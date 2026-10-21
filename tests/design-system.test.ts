@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { PERIODIC_ELEMENTS } from '../src/data/periodicTableData';
+import { PERIODIC_ELEMENTS, getAll118Elements, FLAME_TEST_DATA, calculateBohrShells } from '../src/data/periodicTableData';
 import { EXPERIMENTS_DATA } from '../src/data/experimentsData';
 
 describe('Alche-Me Design System & Shell Test Suite', () => {
@@ -25,6 +25,43 @@ describe('Alche-Me Design System & Shell Test Suite', () => {
       expect(el.electron_configuration).toBeTruthy();
       expect(el.summary).toBeTruthy();
     }
+  });
+
+  it('should generate all 118 elements with proper 18-column format coordinates, shells, and melting points', () => {
+    const all118 = getAll118Elements();
+    expect(all118.length).toBe(118);
+
+    // Verify each atomic number from 1 to 118 is sequentially present
+    for (let z = 1; z <= 118; z++) {
+      const el = all118[z - 1];
+      expect(el.number).toBe(z);
+      expect(el.symbol).toBeTruthy();
+      expect(el.name).toBeTruthy();
+      expect(el.period).toBeGreaterThanOrEqual(1);
+      expect(el.period).toBeLessThanOrEqual(7);
+      expect(el.group).toBeGreaterThanOrEqual(1);
+      expect(el.group).toBeLessThanOrEqual(18);
+      expect(el.shells).toBeDefined();
+      expect(el.shells!.length).toBeGreaterThanOrEqual(1);
+      expect(el.melting_point).toBeGreaterThan(0);
+      expect(el.boiling_point).toBeGreaterThan(0);
+    }
+
+    // Verify characteristic flame tests
+    expect(FLAME_TEST_DATA[11].name).toBe('Intense Yellow'); // Sodium
+    expect(FLAME_TEST_DATA[19].name).toBe('Lilac / Pale Violet'); // Potassium
+    expect(FLAME_TEST_DATA[29].name).toBe('Emerald Blue-Green'); // Copper
+    expect(FLAME_TEST_DATA[38].name).toBe('Crimson Scarlet'); // Strontium
+
+    // Verify Bohr shell calculation obeys Pauli exclusion principle
+    const hydrogenShells = calculateBohrShells(1);
+    expect(hydrogenShells).toEqual([1]);
+
+    const sodiumShells = calculateBohrShells(11);
+    expect(sodiumShells).toEqual([2, 8, 1]);
+
+    const kryptonShells = calculateBohrShells(36);
+    expect(kryptonShells).toEqual([2, 8, 18, 8]);
   });
 
   it('should have all 10 MRIIRS Engineering Chemistry Practicals mapped in experimentsData', () => {

@@ -21,7 +21,9 @@ import {
 } from 'lucide-react';
 import { LevelSchema } from '../../domain/types/curriculum';
 import { progressAdapter } from '../../infrastructure/persistence/progressAdapter';
+import { soundEngine } from '../../infrastructure/audio/soundEngine';
 import { Modal, Button, Badge, ProgressBar } from '../../components/ui';
+import { ConfettiCanvas } from '../../components/ui/ConfettiCanvas';
 import { ClassificationActivity } from './activities/ClassificationActivity';
 
 export interface LevelRunnerModalProps {
@@ -104,6 +106,7 @@ export const LevelRunnerModal: React.FC<LevelRunnerModalProps> = ({
       onLevelCompleted(level.id, weightedScore);
     }
 
+    soundEngine.playVictory();
     setStep('mastery');
   };
 
@@ -390,7 +393,9 @@ export const LevelRunnerModal: React.FC<LevelRunnerModalProps> = ({
 
         {/* STEP 5: MASTERY & REWARDS CELEBRATION */}
         {step === 'mastery' && (
-          <div className="space-y-5 animate-in fade-in duration-200">
+          <div className="space-y-5 animate-in fade-in duration-200 relative">
+            {isMastered && <ConfettiCanvas />}
+
             {/* Score & Honors Summary Card */}
             <div className="p-6 rounded-3xl border-2 border-slate-200/90 bg-white text-center space-y-4 shadow-sm">
               <div className="inline-flex p-3 rounded-2xl bg-amber-50 border-2 border-amber-200 text-[#F5B942] shadow-sm">

@@ -21,7 +21,9 @@ import {
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
+import { ParticleCanvas } from '../ui/ParticleCanvas';
 import { progressAdapter, PlayerProfile } from '../../infrastructure/persistence/progressAdapter';
+import { soundEngine } from '../../infrastructure/audio/soundEngine';
 import { ProfileModal } from '../../features/profile/ProfileModal';
 
 export type NavRoute = 'hub' | 'worlds' | 'periodic-table' | 'virtual-lab' | 'settings';
@@ -49,7 +51,12 @@ export const AppShell: React.FC<AppShellProps> = ({
   }, []);
 
   const toggleSound = () => {
-    setSoundEnabled(!soundEnabled);
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    soundEngine.setMuted(!next);
+    if (next) {
+      soundEngine.playTap();
+    }
   };
 
   const navItems = [
@@ -63,7 +70,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       id: 'worlds' as NavRoute,
       label: 'Adventure Worlds',
       icon: <Compass className="w-4 h-4 shrink-0" />,
-      badge: '6 Realms',
+      badge: '8 Worlds',
     },
     {
       id: 'periodic-table' as NavRoute,
@@ -85,6 +92,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   ];
 
   const handleNavClick = (route: NavRoute) => {
+    soundEngine.playTap();
     onRouteChange(route);
     setMobileMenuOpen(false);
   };
@@ -92,7 +100,10 @@ export const AppShell: React.FC<AppShellProps> = ({
   const activeItem = navItems.find((n) => n.id === currentRoute);
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] text-[#0B1F2A] flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#F7F8FA] text-[#0B1F2A] flex flex-col font-sans select-none relative">
+      {/* Ambient Animated Chemistry Particle Canvas */}
+      <ParticleCanvas />
+
       {/* Skip to Content for Keyboard Accessibility */}
       <a
         href="#main-content"

@@ -312,3 +312,61 @@ Update this file at the end of every phase. Do not mark work complete without ve
 - **Known limitations and content status:**
   - Level 1.1 is fully implemented end-to-end with interactive workbench, assessment, and persistence.
   - Levels 1.2–8.7 have their structured curriculum schemas (learning objectives, key concepts, prerequisites, and source metadata) defined and marked as `planned`, ready for their specific activity engines in subsequent phases.
+
+---
+
+### Graphics, Full 18-Column Zero-Scroll Periodic Table & Interactive Visual Simulators
+- **Date:** October 2026
+- **Summary of implementation:**
+  - **Full 18-Column Mendeleev Periodic Table in Proper IUPAC Format (`PeriodicTableScreen.tsx`):**
+    - Standard 18-column grid with Periods 1–7 and Groups 1–18.
+    - True empty gaps positioned accurately in Periods 1, 2, and 3.
+    - 15-column f-block rows for Lanthanides (57–71, La to Lu) and Actinides (89–103, Ac to Lr) aligned under Group 3.
+    - Interactive connector placeholders in Period 6 Group 3 (`57-71 La-Lu`) and Period 7 Group 3 (`89-103 Ac-Lr`).
+    - **Zero-Scroll Responsive Fit:** Re-architected container to auto-fit desktop/laptop viewports without horizontal or vertical scrolling.
+  - **Live Animated Bohr Quantum Atom Visualizer (`BohrAtomVisualizer.tsx`):**
+    - Hardware-accelerated SVG animated model rendering central nucleus with proton/neutron counts.
+    - Concentric quantum orbital rings (K, L, M, N, O, P, Q) with smoothly revolving electron particles at differential orbital velocities.
+    - Integrated directly into central Quick-Look Terminal and Deep Inspection Modal.
+  - **Interactive Flame Emission Test Simulator (`FlameTestViewer.tsx`):**
+    - Interactive Bunsen burner apparatus with animated flickering flame and platinum wire loop.
+    - Realistic characteristic emission spectra for metals (e.g. Copper emerald blue-green, Sodium golden yellow, Potassium lilac, Strontium crimson scarlet, Calcium brick red, Barium apple green) with flame particles and procedural audio whoosh/crackle.
+  - **Subshell Hund's Rule Box Filling Diagram (`OrbitalBoxesViewer.tsx`):**
+    - Visual orbital boxes with animated spin arrows ($\uparrow$ and $\downarrow$) demonstrating Pauli exclusion and Hund's rule of maximum multiplicity.
+  - **State of Matter at Temperature Slider (0 K to 6000 K):**
+    - Real-time Kelvin slider with preset checkpoints (0 K, 77 K, 273 K, 298 K, 373 K, 1811 K).
+    - Elements dynamically evaluate and display state of matter (🧊 Solid, 💧 Liquid, 💨 Gas, ⚡ Plasma) with pitch-gliding audio feedback.
+  - **Zero-Dependency Procedural Web Audio Engine (`soundEngine.ts`):**
+    - Synthesizes tactile game audio via the Web Audio API: harmonic element pips scaled by atomic number $Z$, selection chimes, flame whooshes, temperature tick glides, and triumphant victory fanfare.
+  - **Ambient Animated Particle Canvas (`ParticleCanvas.tsx`):**
+    - Background floating particles with dynamic covalent bonding lines, responsive to reduced-motion preferences.
+  - **Interactive Laboratory Workbench Visualizer (`LaboratoryWorkbenchVisualizer.tsx`):**
+    - Upgraded Level 1.1 investigation with 4 interactive apparatus stations: effervescent bubbling beaker with rising $H_2$ gas bubbles, digital analytical balance with glowing 7-segment green LED `24.321 g`, thermocouple probe with convective thermal waves `78.4 °C`, and copper coupon with turquoise verdigris patina.
+  - **Celebration Confetti Engine (`ConfettiCanvas.tsx`):**
+    - Canvas celebration effect triggered upon level mastery alongside fanfare audio.
+
+- **Files added/changed:**
+  - `src/features/periodic-table/PeriodicTableScreen.tsx` (Rewritten - Full 18-col IUPAC grid, zero-scroll fit, central HUD, heatmaps, state of matter slider)
+  - `src/features/periodic-table/BohrAtomVisualizer.tsx` (New - Animated Bohr quantum atom with revolving electrons)
+  - `src/features/periodic-table/FlameTestViewer.tsx` (New - Interactive Bunsen burner flame test apparatus)
+  - `src/features/periodic-table/OrbitalBoxesViewer.tsx` (New - Hund's rule spin box diagrams)
+  - `src/infrastructure/audio/soundEngine.ts` (New - Web Audio procedural synthesizer)
+  - `src/components/ui/ParticleCanvas.tsx` (New - Ambient chemical particle background)
+  - `src/components/ui/ConfettiCanvas.tsx` (New - Level mastery victory celebration)
+  - `src/features/progression/activities/LaboratoryWorkbenchVisualizer.tsx` (New - Interactive 4-station visual apparatus)
+  - `src/features/progression/activities/ClassificationActivity.tsx` (Updated - Integrated visual laboratory workbench & audio taps)
+  - `src/features/progression/LevelRunnerModal.tsx` (Updated - Victory audio fanfare & confetti integration)
+  - `src/components/layout/AppShell.tsx` (Updated - Ambient particle canvas & sound toggle hookup)
+  - `src/data/periodicTableData.ts` (Updated - All 118 elements enriched with Bohr shells, reference melting/boiling points, flame colors)
+  - `src/types/chemistry.ts` (Updated - Added shells, melting/boiling points, and flame test properties)
+  - `tests/design-system.test.ts` (Updated - Added tests for 118 elements, Bohr shell calculations, and flame test datasets)
+  - `docs/Alche-Me_Progress_Tracker.md` (Updated)
+
+- **Commands run and exit status:**
+  - `npm test` (`vitest run`) — Exit code: 0 (17/17 passed across 3 test suites in 5.74s)
+  - `npm run build` (`tsc -b && vite build`) — Exit code: 0 (Built in 19.73s, zero errors)
+
+- **Tests added and results:**
+  - `tests/design-system.test.ts`:
+    - `should generate all 118 elements with proper 18-column format coordinates, shells, and melting points` — PASSED
+  - Total across all suites: 17 passed, 0 failed.
