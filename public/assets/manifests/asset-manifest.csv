@@ -1,0 +1,6 @@
+id,path,purpose,format,dimensions_or_polycount,source,license,attribution,optimized,used_by_feature,status,notes
+alche-me-logo,branding/Alche-Me Logo.png,Primary visual branding logo,PNG,1024x1024,Internal Project Design,Proprietary / CC-BY-4.0,Alche-Me Team,false,Onboarding / Hub / Navbar,active,High-resolution original logo
+alche-me-mark,branding/alche-me-mark.svg,Vector emblem and mark,SVG,64x64,Internal Vector Art,MIT,Alche-Me Team,true,Header / Favicon / Badges,active,Crisp scalable icon
+alche-me-styleboard,icons/Alche-Me Chemistry Game Styleboard.png,Visual identity and design system reference board,PNG,1920x1080,Internal Concept Art,Proprietary / CC-BY-4.0,Alche-Me Team,false,Design System Reference,reference,Art direction reference
+six-scientific-worlds,worlds/Alche-Me_ Six Scientific Worlds.png,Overview artwork of the 6 key scientific realms,PNG,1920x1080,Internal Concept Art,Proprietary / CC-BY-4.0,Alche-Me Team,false,World Selection / Hub,active,World exploration teaser art
+lab-futuristic-view,backgrounds/Futuristic Chemistry Lab with Mountain Views.png,Atmospheric laboratory background,PNG,1920x1080,Internal Concept Art,Proprietary / CC-BY-4.0,Alche-Me Team,false,Virtual 3D Laboratory Hub,active,High-resolution lab backdrop
