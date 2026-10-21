@@ -13,7 +13,8 @@ import { soundEngine } from '../../infrastructure/audio/soundEngine';
 import { BohrAtomVisualizer } from './BohrAtomVisualizer';
 import { FlameTestViewer } from './FlameTestViewer';
 import { OrbitalBoxesViewer } from './OrbitalBoxesViewer';
-import { Button, Input, Modal, Badge } from '../../components/ui';
+import { RealisticMoleculeViewer3D } from '../../components/3d/RealisticMoleculeViewer3D';
+import { Button, Input, Modal, Badge, MarkdownRenderer } from '../../components/ui';
 
 type HeatmapMode = 'category' | 'electronegativity' | 'ionization_energy' | 'state_of_matter';
 
@@ -552,15 +553,15 @@ export const PeriodicTableScreen: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
           title={`${selectedElement.name} (${selectedElement.symbol}) — Z=${selectedElement.number}`}
           description={`Period ${selectedElement.period}, Group ${selectedElement.group} • ${selectedElement.category.replace('-', ' ').toUpperCase()}`}
-          size="lg"
+          size="xl"
         >
-          <div className="space-y-4 text-xs select-none">
-            {/* Top Graphics Row: Animated Bohr Atom + Flame Test apparatus */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="space-y-6 text-sm sm:text-base select-none">
+            {/* Top Graphics Row: Physically Accurate 3D Bohr Atom + Flame Test apparatus */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Animated Bohr Quantum Model */}
-              <div className="p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 flex flex-col items-center justify-center shadow-xs">
-                <span className="text-[11px] font-montserrat font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Bohr Quantum Orbitals (K-Q Shells)
+              <div className="p-5 rounded-3xl border-2 border-slate-100 bg-slate-50 flex flex-col items-center justify-center shadow-xs">
+                <span className="text-xs font-montserrat font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                  Physically Quantized Quantum Atom (r ∝ n²)
                 </span>
                 <BohrAtomVisualizer element={selectedElement} size="md" showDetails={true} />
               </div>
@@ -570,48 +571,58 @@ export const PeriodicTableScreen: React.FC = () => {
             </div>
 
             {/* Scientific Properties Metrics Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <div className="p-3 rounded-xl border-2 border-slate-100 bg-white shadow-xs">
-                <span className="text-slate-400 block text-[10px] font-medium">Standard Mass</span>
-                <span className="font-montserrat font-extrabold text-sm text-[#0B1F2A]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-4 rounded-2xl border-2 border-slate-100 bg-white shadow-xs">
+                <span className="text-slate-400 block text-xs font-medium">Standard Mass</span>
+                <span className="font-montserrat font-extrabold text-base text-[#0B1F2A]">
                   {selectedElement.mass} u
                 </span>
               </div>
-              <div className="p-3 rounded-xl border-2 border-teal-100 bg-teal-50/60 shadow-xs">
-                <span className="text-teal-700 block text-[10px] font-medium">Electronegativity</span>
-                <span className="font-montserrat font-extrabold text-sm text-[#00C2D1]">
+              <div className="p-4 rounded-2xl border-2 border-teal-100 bg-teal-50/60 shadow-xs">
+                <span className="text-teal-700 block text-xs font-medium">Electronegativity</span>
+                <span className="font-montserrat font-extrabold text-base text-[#00C2D1]">
                   {selectedElement.electronegativity ?? 'Inert / N/A'}
                 </span>
               </div>
-              <div className="p-3 rounded-xl border-2 border-slate-100 bg-white shadow-xs">
-                <span className="text-slate-400 block text-[10px] font-medium">Atomic Radius</span>
-                <span className="font-montserrat font-extrabold text-sm text-[#0B1F2A]">
-                  {selectedElement.atomic_radius ? `${selectedElement.atomic_radius} pm` : 'N/A'}
+              <div className="p-4 rounded-2xl border-2 border-slate-100 bg-white shadow-xs">
+                <span className="text-slate-400 block text-xs font-medium">Melting Point</span>
+                <span className="font-montserrat font-extrabold text-base text-[#0B1F2A]">
+                  {selectedElement.melting_point ? `${selectedElement.melting_point} K` : 'N/A'}
                 </span>
               </div>
-              <div className="p-3 rounded-xl border-2 border-slate-100 bg-white shadow-xs">
-                <span className="text-slate-400 block text-[10px] font-medium">1st Ionization Energy</span>
-                <span className="font-montserrat font-extrabold text-sm text-[#0B1F2A]">
+              <div className="p-4 rounded-2xl border-2 border-slate-100 bg-white shadow-xs">
+                <span className="text-slate-400 block text-xs font-medium">1st Ionization Energy</span>
+                <span className="font-montserrat font-extrabold text-base text-[#0B1F2A]">
                   {selectedElement.ionization_energy ? `${selectedElement.ionization_energy} kJ/mol` : 'N/A'}
                 </span>
               </div>
             </div>
 
+            {/* 3D Molecular Geometry Studio */}
+            <div className="rounded-3xl border-2 border-slate-100 overflow-hidden shadow-xs">
+              <RealisticMoleculeViewer3D />
+            </div>
+
             {/* Subshell Hund's Rule Box Filling Diagram */}
-            <div className="p-3.5 rounded-2xl border-2 border-slate-100 bg-white shadow-xs">
+            <div className="p-5 rounded-3xl border-2 border-slate-100 bg-white shadow-xs">
               <OrbitalBoxesViewer element={selectedElement} />
             </div>
 
-            {/* Summary Lore & Pedagogical Relevance */}
-            <div className="p-3.5 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-700 leading-relaxed text-xs">
-              <strong className="text-[#0B1F2A] font-montserrat block mb-1">Chemical Profile & Applications:</strong>
-              {selectedElement.summary}
+            {/* Summary Lore & Pedagogical Relevance with Markdown */}
+            <div className="p-5 rounded-3xl border-2 border-slate-100 bg-slate-50 text-slate-700 space-y-2">
+              <span className="text-xs font-montserrat font-extrabold uppercase tracking-wider text-[#0B1F2A] block">
+                Chemical Profile & Applications
+              </span>
+              <MarkdownRenderer
+                content={selectedElement.summary}
+                className="text-sm sm:text-base text-slate-700 leading-relaxed font-normal"
+              />
             </div>
 
-            <div className="flex justify-end pt-1">
+            <div className="flex justify-end pt-2">
               <Button
                 variant="primary"
-                size="sm"
+                size="md"
                 onClick={() => setIsModalOpen(false)}
                 className="bg-[#00C2D1] hover:bg-[#008E9B] text-white font-montserrat font-bold cursor-pointer"
               >

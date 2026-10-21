@@ -370,3 +370,46 @@ Update this file at the end of every phase. Do not mark work complete without ve
   - `tests/design-system.test.ts`:
     - `should generate all 118 elements with proper 18-column format coordinates, shells, and melting points` — PASSED
   - Total across all suites: 17 passed, 0 failed.
+
+---
+
+### Physics & Geometric Model Accuracy, All-World/Level Unlock & High-Readability Markdown
+- **Date:** October 2026
+- **Summary of implementation:**
+  - **Full Curriculum & World Unlocking (Inspector Mode):**
+    - Unlocked all 8 worlds and all 56 levels by default so every single curriculum module can be inspected and played immediately.
+    - Added Inspector Mode toggle (`WorldMapScreen.tsx` and `WorldOverviewScreen.tsx`) allowing instant switching between open exploration and strict progressive campaign locking.
+    - Updated `WorldOverviewScreen` and `LevelRunnerModal` so that clicking any of the 56 levels directly launches its full lesson, interactive activity/experiment, assessment, and scoring loop without "planned placeholder" blockers.
+  - **Physical & Geometrically Accurate Quantum Bohr Model (`BohrAtomVisualizer.tsx`):**
+    - Quantized orbital radii scaling strictly according to Bohr-Sommerfeld physics: $r_n = a_0 \cdot \frac{n^2}{Z_{eff}}$ (quadratic expansion).
+    - Physical orbital angular frequency: $\omega_n \propto \frac{1}{n^3}$ (inner electrons revolve faster than outer shells).
+    - 3D gyroscopic spatial orbital planes with inclination angles ($i_n$) and nodal precession.
+    - 3D packed nucleon cluster with distinct shaded proton ($p^+$) and neutron ($n^0$) spheres.
+    - Real-time quantum mode toggle: 3D Bohr Quantized Shells vs. Schrödinger Probability Density Wave Cloud ($\psi^2$).
+  - **Realistic 3D WebGL Molecular Geometry Studio (`RealisticMoleculeViewer3D.tsx`):**
+    - Deployed Three.js (`three.min.js`, `OrbitControls.js`, `3Dmol-min.js`) into `/public` and wired into `index.html`.
+    - Implemented interactive 3D PBR molecular viewer with studio 3-point lighting, ground contact shadows, CPK coloring, and VSEPR bond angles.
+    - Included verified presets: Water ($H_2O$ bent $104.5^\circ$), Carbon Dioxide ($CO_2$ linear $180^\circ$), Methane ($CH_4$ regular tetrahedral $109.5^\circ$), Ammonia ($NH_3$ trigonal pyramidal $107.3^\circ$), and Benzene ($C_6H_6$ planar aromatic ring).
+    - Toggle between Ball-and-Stick and Space-Filling (van der Waals) modes with smooth orbital mouse controls.
+    - Embedded into the Element Detail Inspector and Mission Workbench.
+  - **Scientific Markdown Renderer with Bit Larger Fonts (`MarkdownRenderer.tsx`):**
+    - Formats Markdown headers, lists, blockquotes, inline badges, and scientific chemical formulas ($H_2O$, $CO_2$, $ZnCl_2$, arrows $\rightarrow$, $\rightleftharpoons$).
+    - Applied comfortable, larger typography across lessons, briefings, and assessments: body text enlarged to `text-sm sm:text-base` (15-16px) with generous line-height (`leading-relaxed`), and titles scaled to `text-lg sm:text-xl`/`text-2xl`.
+
+- **Files added/changed:**
+  - `src/components/ui/MarkdownRenderer.tsx` (New - High-readability scientific markdown component)
+  - `src/components/3d/RealisticMoleculeViewer3D.tsx` (New - Three.js WebGL molecular viewer with VSEPR geometries)
+  - `public/three.min.js`, `public/OrbitControls.js`, `public/3Dmol-min.js` (Added - 3D runtime libraries)
+  - `index.html` (Updated - Injected 3D WebGL runtime scripts)
+  - `src/components/ui/index.ts` (Updated - Exported MarkdownRenderer)
+  - `src/features/periodic-table/BohrAtomVisualizer.tsx` (Updated - Physically accurate $r \propto n^2$, $\omega \propto 1/n^3$, 3D tilted orbits, nucleon packing, Schrödinger cloud)
+  - `src/features/periodic-table/PeriodicTableScreen.tsx` (Updated - Embedded 3D Molecular Studio and Markdown in inspection modal)
+  - `src/features/worlds/WorldMapScreen.tsx` (Updated - Unlocked all 8 worlds with Inspector Mode toggle)
+  - `src/features/worlds/WorldOverviewScreen.tsx` (Updated - Unlocked all 56 levels with Inspector Mode toggle and Markdown)
+  - `src/features/progression/LevelRunnerModal.tsx` (Updated - Bit larger fonts, MarkdownRenderer, 3D workbench, dynamic curriculum lessons)
+  - `src/features/progression/activities/ClassificationActivity.tsx` (Updated - Larger typography and Markdown)
+  - `docs/Alche-Me_Progress_Tracker.md` (Updated)
+
+- **Commands run and exit status:**
+  - `npm test` (`vitest run`) — Exit code: 0 (17/17 passed across 3 test suites in 6.99s)
+  - `npm run build` (`tsc -b && vite build`) — Exit code: 0 (Built in 6.45s, zero errors)

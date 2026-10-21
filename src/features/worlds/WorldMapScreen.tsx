@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Compass, 
   Lock, 
+  Unlock,
   CheckCircle2, 
   ArrowRight, 
   Sparkles, 
@@ -23,6 +24,7 @@ export interface WorldMapScreenProps {
 export const WorldMapScreen: React.FC<WorldMapScreenProps> = ({ onSelectWorld }) => {
   const profile = progressAdapter.getPlayerProfile();
   const allProgress = progressAdapter.getAllProgress();
+  const [inspectorMode, setInspectorMode] = useState(true);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -40,7 +42,20 @@ export const WorldMapScreen: React.FC<WorldMapScreenProps> = ({ onSelectWorld })
             Explore 8 explorable worlds and 56 progressive levels taking you from absolute beginner observations to advanced problem solving, laboratory analysis, and engineering chemistry.
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setInspectorMode(!inspectorMode)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-montserrat font-bold flex items-center gap-1.5 transition-all cursor-pointer border ${
+              inspectorMode
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-800 shadow-xs'
+                : 'bg-slate-100 border-slate-200 text-slate-600'
+            }`}
+            title="Toggle between full inspection access and progressive story unlocking"
+          >
+            {inspectorMode ? <Unlock className="w-3.5 h-3.5 text-emerald-600" /> : <Lock className="w-3.5 h-3.5 text-slate-500" />}
+            <span>{inspectorMode ? 'All Worlds Unlocked (Inspector Mode)' : 'Campaign Locking Active'}</span>
+          </button>
           <Badge variant="gold" size="lg">
             Scholar Lvl {profile.level} • {profile.xp} XP
           </Badge>
@@ -50,11 +65,11 @@ export const WorldMapScreen: React.FC<WorldMapScreenProps> = ({ onSelectWorld })
       {/* World Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {CURRICULUM_WORLDS.map((world) => {
-          // Check if world is unlocked
+          // Check if world is unlocked (bypassed in Inspector Mode)
           let isLocked = false;
           let prereqWorldName = '';
 
-          if (world.prerequisiteWorldId) {
+          if (!inspectorMode && world.prerequisiteWorldId) {
             const prereqWorld = CURRICULUM_WORLDS.find((w) => w.id === world.prerequisiteWorldId);
             if (prereqWorld) {
               prereqWorldName = prereqWorld.title;
@@ -63,7 +78,6 @@ export const WorldMapScreen: React.FC<WorldMapScreenProps> = ({ onSelectWorld })
                 const unlockProg = allProgress[world.unlockLevelId];
                 isLocked = !(unlockProg?.status === 'completed' || unlockProg?.status === 'mastered');
               } else if (prereqWorld.levels.length > 0) {
-                // Otherwise check if first level or all implemented levels of prereq world are done
                 const implementedLevels = prereqWorld.levels.filter(l => l.implementationStatus === 'fully_implemented');
                 if (implementedLevels.length > 0) {
                   const allDone = implementedLevels.every(

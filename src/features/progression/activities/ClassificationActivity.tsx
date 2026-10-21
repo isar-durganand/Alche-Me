@@ -11,7 +11,7 @@ import {
   Info
 } from 'lucide-react';
 import { ClassificationActivityConfig, ClassificationItem } from '../../../domain/types/curriculum';
-import { Button, Badge } from '../../../components/ui';
+import { Button, Badge, MarkdownRenderer } from '../../../components/ui';
 import { soundEngine } from '../../../infrastructure/audio/soundEngine';
 import { LaboratoryWorkbenchVisualizer } from './LaboratoryWorkbenchVisualizer';
 
@@ -73,13 +73,11 @@ export const ClassificationActivity: React.FC<ClassificationActivityProps> = ({
       <div className="p-4 rounded-2xl border-2 border-slate-100 bg-teal-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
         <div className="flex items-start gap-2.5">
           <Info className="w-5 h-5 text-[#00C2D1] shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <span className="font-montserrat font-bold text-xs text-[#0B1F2A] block">
+          <div className="space-y-1">
+            <span className="font-montserrat font-extrabold text-sm text-[#0B1F2A] block">
               Interactive Investigation Workbench
             </span>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {instruction}
-            </p>
+            <MarkdownRenderer content={instruction} className="text-xs sm:text-sm text-slate-600 leading-relaxed" />
           </div>
         </div>
 
@@ -229,8 +227,8 @@ export const ClassificationActivity: React.FC<ClassificationActivityProps> = ({
                     )}
                   </div>
 
-                  <p className="text-xs text-[#0B1F2A] font-medium leading-relaxed mb-3">
-                    "{item.text}"
+                  <p className="text-sm text-[#0B1F2A] font-medium leading-relaxed mb-3">
+                    "{item.text.replace(/H2/g, 'H₂').replace(/HCl/g, 'HCl').replace(/ZnCl2/g, 'ZnCl₂')}"
                   </p>
 
                   {isHintOpen && item.hint && (

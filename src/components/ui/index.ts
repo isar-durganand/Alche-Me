@@ -8,3 +8,6 @@ export * from './ProgressBar';
 export * from './Alert';
 export * from './Skeleton';
 export * from './Tooltip';
+export * from './MarkdownRenderer';
+export * from './ParticleCanvas';
+export * from './ConfettiCanvas';
