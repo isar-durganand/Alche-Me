@@ -11,7 +11,7 @@ Update this file at the end of every phase. Do not mark work complete without ve
 - Baseline app command: `npm run dev` (starts Vite dev server at port 5174)
 - Baseline test command: `npm test` (`vitest run`)
 - Baseline build command: `npm run build` (`tsc -b && vite build`)
-- Last verified commit/backup: Phase 01 Baseline Verified
+- Last verified commit/backup: `5731959` (git commit `5731959` on `master`)
 - Known failures: None. Zero build errors, zero test failures.
 
 ## Phase checklist
