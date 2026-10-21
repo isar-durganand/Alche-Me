@@ -5,24 +5,49 @@
   --cq-bg: #101317;
   --cq-surface: #171c22;
   --cq-surface-raised: #202730;
+  --cq-surface-hover: #262e3a;
   --cq-border: #303944;
+  --cq-border-focus: #56b4e9;
   --cq-text: #f3f5f7;
   --cq-text-muted: #a9b2bd;
   --cq-accent: #56b4e9;
+  --cq-accent-hover: #419cd0;
+  --cq-accent-subtle: rgba(86, 180, 233, 0.12);
   --cq-accent-strong: #168ac4;
   --cq-success: #55b889;
+  --cq-success-subtle: rgba(85, 184, 137, 0.12);
   --cq-warning: #e7b45a;
+  --cq-warning-subtle: rgba(231, 180, 90, 0.12);
   --cq-danger: #e47777;
+  --cq-danger-subtle: rgba(228, 119, 119, 0.12);
   --cq-focus: #8bd3ff;
+  
   --cq-radius-sm: 6px;
   --cq-radius-md: 10px;
   --cq-radius-lg: 16px;
+  --cq-radius-full: 9999px;
+  
   --cq-space-1: 4px;
   --cq-space-2: 8px;
   --cq-space-3: 12px;
   --cq-space-4: 16px;
   --cq-space-6: 24px;
   --cq-space-8: 32px;
+
+  --cq-transition-fast: 150ms ease;
+  --cq-transition-base: 250ms ease;
+}
+
+/* High-contrast mode override */
+.high-contrast {
+  --cq-bg: #000000;
+  --cq-surface: #0a0d11;
+  --cq-surface-raised: #141a22;
+  --cq-border: #526377;
+  --cq-text: #ffffff;
+  --cq-text-muted: #c8d1dc;
+  --cq-accent: #78caff;
+  --cq-focus: #ffffff;
 }
 
 body {
@@ -30,9 +55,29 @@ body {
   color: var(--cq-text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
-/* Custom scrollbar for desktop views */
+/* Accessible Focus Ring */
+*:focus-visible {
+  outline: 2px solid var(--cq-focus);
+  outline-offset: 2px;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
