@@ -43,7 +43,7 @@ export const App: React.FC = () => {
       case 'periodic-table':
         return <PeriodicTableScreen />;
       case 'molecule-studio':
-        return <MoleculeStudioScreen />;
+        return <MoleculeStudioScreen onNavigate={handleNavigate} />;
       case 'virtual-lab':
         return <VirtualLabScreen />;
       case 'settings':

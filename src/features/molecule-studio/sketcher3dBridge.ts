@@ -127,8 +127,21 @@ export function convert2DTo3D(
   };
 }
 
+function resolveAtomId(ref: string | number, atoms: AtomNode[]): string {
+  const str = String(ref);
+  const byId = atoms.find((a) => a.id === str);
+  if (byId) return byId.id;
+  const num = Number(ref);
+  if (!isNaN(num)) {
+    const byIndex = atoms.find((a) => a.index === num) || atoms[num];
+    if (byIndex) return byIndex.id;
+  }
+  return str;
+}
+
 /**
- * Projects a 3D molecule onto a 2D plane for the chemical sketcher
+ * Projects a 3D molecule onto a 2D plane for the chemical sketcher.
+ * Uses principal dispersion plane (XY, YZ, or XZ) to preserve true geometry.
  */
 export function convert3DTo2D(
   atoms3D: AtomNode[],
@@ -143,34 +156,67 @@ export function convert3DTo2D(
     return { atoms: [], bonds: [] };
   }
 
-  // Filter out explicit Hydrogens if attached to heavy atoms (standard 2D skeletal representation)
-  // Keep hydrogens only if isolated or essential (e.g. water H-O-H, methane CH4)
-  const heavyCount = atoms3D.filter((a) => a.symbol !== 'H').length;
-  let visible3DAtoms = atoms3D;
-  let visible3DBonds = bonds3D;
+  // In standard chemical skeletal drawings, hydrogens attached to carbons are implicit.
+  // Hydrogens attached to heteroatoms (e.g. O-H in water/alcohols, N-H in amines) are preserved.
+  const carbonIds = new Set(atoms3D.filter((a) => a.symbol === 'C').map((a) => a.id));
+  const bondsWithCarbon = new Set(
+    bonds3D
+      .filter((b) => carbonIds.has(resolveAtomId(b.from, atoms3D)) || carbonIds.has(resolveAtomId(b.to, atoms3D)))
+      .flatMap((b) => [resolveAtomId(b.from, atoms3D), resolveAtomId(b.to, atoms3D)])
+  );
 
-  if (heavyCount >= 2) {
-    visible3DAtoms = atoms3D.filter((a) => a.symbol !== 'H');
-    const validIds = new Set(visible3DAtoms.map((a) => a.id));
-    visible3DBonds = bonds3D.filter((b) => validIds.has(String(b.from)) && validIds.has(String(b.to)));
+  let visible3DAtoms = atoms3D;
+  if (carbonIds.size >= 1) {
+    // Only omit H if attached to a Carbon atom
+    visible3DAtoms = atoms3D.filter((a) => !(a.symbol === 'H' && bondsWithCarbon.has(a.id)));
   }
 
-  // Find 3D bounding box in XY plane
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  // Determine principal projection plane (XY, YZ, or XZ) that maximizes spatial dispersion
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  let minZ = Infinity, maxZ = -Infinity;
+
   for (const a of visible3DAtoms) {
     if (a.x < minX) minX = a.x;
     if (a.x > maxX) maxX = a.x;
     if (a.y < minY) minY = a.y;
     if (a.y > maxY) maxY = a.y;
+    if (a.z < minZ) minZ = a.z;
+    if (a.z > maxZ) maxZ = a.z;
   }
-  const midX = (minX + maxX) / 2;
-  const midY = (minY + maxY) / 2;
 
-  const spanX = Math.max(2.0, maxX - minX);
-  const spanY = Math.max(2.0, maxY - minY);
+  const spanX = Math.max(0.01, maxX - minX);
+  const spanY = Math.max(0.01, maxY - minY);
+  const spanZ = Math.max(0.01, maxZ - minZ);
+
+  const areaXY = spanX * spanY;
+  const areaYZ = spanY * spanZ;
+  const areaXZ = spanX * spanZ;
+
+  let uCoord: (a: AtomNode) => number = (a) => a.x;
+  let vCoord: (a: AtomNode) => number = (a) => a.y;
+  let spanU = spanX, spanV = spanY;
+  let midU = (minX + maxX) / 2, midV = (minY + maxY) / 2;
+
+  if (areaYZ >= areaXY && areaYZ >= areaXZ) {
+    uCoord = (a) => a.y;
+    vCoord = (a) => a.z;
+    spanU = spanY;
+    spanV = spanZ;
+    midU = (minY + maxY) / 2;
+    midV = (minZ + maxZ) / 2;
+  } else if (areaXZ >= areaXY && areaXZ >= areaYZ) {
+    uCoord = (a) => a.x;
+    vCoord = (a) => a.z;
+    spanU = spanX;
+    spanV = spanZ;
+    midU = (minX + maxX) / 2;
+    midV = (minZ + maxZ) / 2;
+  }
+
   const fitScale = Math.min(
-    (targetCanvasWidth * 0.6) / spanX,
-    (targetCanvasHeight * 0.6) / spanY,
+    (targetCanvasWidth * 0.6) / Math.max(1.8, spanU),
+    (targetCanvasHeight * 0.6) / Math.max(1.8, spanV),
     STANDARD_2D_BOND_PX / BOND_LENGTH_ANGSTROMS
   );
 
@@ -180,16 +226,20 @@ export function convert3DTo2D(
   const atoms2D: Atom2D[] = visible3DAtoms.map((a) => ({
     id: a.id,
     symbol: a.symbol,
-    x: Math.round(canvasCenterX + (a.x - midX) * fitScale),
-    y: Math.round(canvasCenterY - (a.y - midY) * fitScale), // invert Y back to 2D screen coords
+    x: Math.round(canvasCenterX + (uCoord(a) - midU) * fitScale),
+    y: Math.round(canvasCenterY - (vCoord(a) - midV) * fitScale), // invert V back to 2D screen coords
   }));
 
-  const bonds2D: Bond2D[] = visible3DBonds.map((b) => ({
-    id: b.id,
-    from: String(b.from),
-    to: String(b.to),
-    order: b.order,
-  }));
+  const validAtomIds = new Set(atoms2D.map((a) => a.id));
+
+  const bonds2D: Bond2D[] = bonds3D
+    .map((b) => ({
+      id: b.id,
+      from: resolveAtomId(b.from, atoms3D),
+      to: resolveAtomId(b.to, atoms3D),
+      order: b.order,
+    }))
+    .filter((b) => validAtomIds.has(b.from) && validAtomIds.has(b.to) && b.from !== b.to);
 
   return { atoms: atoms2D, bonds: bonds2D };
 }

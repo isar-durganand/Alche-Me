@@ -978,9 +978,9 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         </div>
       )}
 
-      {/* Top-Right Quick Viewport Controls & Drag/Pan Switcher */}
-      <div className="absolute top-2.5 right-3 z-20 flex items-center gap-1.5 p-1 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/80 shadow-lg text-white">
-        {/* Sync from 2D button */}
+      {/* Top-Right MolView 3D Viewport Toolbar matching Screenshot 1 */}
+      <div className="absolute top-3 right-3 z-20 flex items-center gap-1 p-1 rounded-xl bg-slate-900/85 backdrop-blur-md border border-slate-700 shadow-xl text-white">
+        {/* 1. Sync from 2D button */}
         {onSyncFrom2D && (
           <button
             type="button"
@@ -989,13 +989,13 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
               onSyncFrom2D();
             }}
             title="Sync 2D Sketcher to 3D Viewport"
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-sky-400 transition-all cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-slate-800 text-sky-400 hover:text-sky-300 transition-all cursor-pointer"
           >
             <RotateCw className="w-4 h-4" />
           </button>
         )}
 
-        {/* Energy Minimization (Clean 3D / Lightning icon) */}
+        {/* 2. Energy Minimization (VSEPR Clean 3D) */}
         {onClean3D && (
           <button
             type="button"
@@ -1012,7 +1012,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
 
         <div className="h-4 w-px bg-slate-700 mx-0.5" />
 
-        {/* Model Style Selector */}
+        {/* 3. Model Style Selector */}
         {(['ballAndStick', 'spaceFilling', 'licorice', 'wireframe'] as DisplayStyle[]).map((st) => (
           <button
             key={st}
@@ -1021,9 +1021,9 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
               soundEngine.playTap();
               onDisplayStyleChange(st);
             }}
-            title={st === 'ballAndStick' ? 'Ball and Stick' : st === 'spaceFilling' ? 'Spacefill (CPK)' : st === 'licorice' ? 'Stick' : 'Wireframe'}
-            className={`px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-              displayStyle === st ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            title={st === 'ballAndStick' ? 'Ball and Stick' : st === 'spaceFilling' ? 'Spacefill (CPK)' : st === 'licorice' ? 'Licorice Stick' : 'Wireframe'}
+            className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              displayStyle === st ? 'bg-sky-600 text-white font-bold' : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
             {st === 'ballAndStick' ? 'Ball & Stick' : st === 'spaceFilling' ? 'Spacefill' : st === 'licorice' ? 'Stick' : 'Wire'}
@@ -1032,14 +1032,14 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
 
         <div className="h-4 w-px bg-slate-700 mx-0.5" />
 
-        {/* Measurement Tool Toggle */}
+        {/* 4. Measurement Tool Toggle */}
         <button
           type="button"
           onClick={() => {
             soundEngine.playTap();
             onMeasurementModeChange(measurementMode === 'angle' ? 'none' : 'angle');
           }}
-          title="Bond Angle Measurement (°)"
+          title={measurementMode === 'angle' ? 'Exit Angle Measurement' : 'Measure Bond Angle (Click 3 atoms)'}
           className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             measurementMode === 'angle' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white hover:bg-slate-800'
           }`}
@@ -1047,84 +1047,29 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
           <Compass className="w-4 h-4" />
         </button>
 
-        {/* DRAG / PAN vs ROTATE MODE SWITCHER */}
-        <div className="flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700">
-          <button
-            type="button"
-            onClick={() => {
-              soundEngine.playTap();
-              setNavigationMode('rotate');
-            }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-              navigationMode === 'rotate'
-                ? 'bg-slate-700 text-white shadow-xs'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            title="Rotate 360° Mode"
-          >
-            <RotateCw className="w-3.5 h-3.5 text-sky-400" />
-            <span className="hidden sm:inline">Rotate</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              soundEngine.playTap();
-              setNavigationMode('pan');
-            }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-              navigationMode === 'pan'
-                ? 'bg-sky-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            title="Pan / Move Mode"
-          >
-            <Move className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Pan</span>
-          </button>
-        </div>
-
-        {/* SNAP TO CENTER */}
+        {/* 5. Center Camera */}
         <button
           type="button"
           onClick={handleRecenter}
-          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-sky-600 text-white hover:bg-sky-500 text-xs font-bold transition-all cursor-pointer shadow-xs"
-          title="Center molecule squarely in viewport (Reset Camera)"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+          title="Center molecule in viewport"
         >
-          <Focus className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Center</span>
+          <Focus className="w-4 h-4" />
         </button>
 
-        {/* Auto-Rotation Spin */}
+        {/* 6. Auto-Rotation Spin */}
         <button
           type="button"
           onClick={handleToggleSpin}
           className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             isSpinning ? 'text-amber-400 bg-slate-800' : 'text-slate-400 hover:text-white hover:bg-slate-800'
           }`}
-          title="Toggle Auto-Spin (360°)"
+          title="Toggle Auto-Spin"
         >
           <RotateCw className={`w-4 h-4 ${isSpinning ? 'animate-spin' : ''}`} />
         </button>
 
-        {/* Zoom Controls */}
-        <button
-          type="button"
-          onClick={() => handleZoom(1.2)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-          title="Zoom In"
-        >
-          <ZoomIn className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => handleZoom(0.8)}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-          title="Zoom Out"
-        >
-          <ZoomOut className="w-4 h-4" />
-        </button>
-
-        {/* Snapshot PNG */}
+        {/* 7. Snapshot PNG Export */}
         <button
           type="button"
           onClick={handleTakeSnapshot}
@@ -1133,146 +1078,20 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         >
           <Camera className="w-4 h-4 text-emerald-400" />
         </button>
-
-        {/* Labels Toggle */}
-        <button
-          type="button"
-          onClick={() => {
-            soundEngine.playTap();
-            onToggleLabels();
-          }}
-          className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            showLabels ? 'bg-sky-900 text-sky-400 border border-sky-600' : 'text-slate-400 hover:text-white hover:bg-slate-800'
-          }`}
-          title="Toggle Atom Labels"
-        >
-          <Tag className="w-4 h-4" />
-        </button>
-
-        {/* Fullscreen Toggle */}
-        <button
-          type="button"
-          onClick={toggleFullscreen}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-          title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-        >
-          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-        </button>
       </div>
 
-      {/* Floating Canvas Directional Nudge D-Pad */}
-      <div className="absolute bottom-16 right-4 z-20 flex flex-col items-center bg-white/95 backdrop-blur-sm border-2 border-slate-200 rounded-2xl p-1 shadow-md">
-        <button
-          type="button"
-          onClick={() => handleNudge(0, 0.6)}
-          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition-all cursor-pointer"
-          title="Move Molecule Up"
-        >
-          <ArrowUp className="w-3.5 h-3.5" />
-        </button>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => handleNudge(-0.6, 0)}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition-all cursor-pointer"
-            title="Move Molecule Left"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={handleRecenter}
-            className="p-1.5 rounded-lg bg-[#00C2D1] text-white hover:bg-[#008E9B] shadow-xs cursor-pointer"
-            title="Center Camera on Molecule"
-          >
-            <Focus className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => handleNudge(0.6, 0)}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition-all cursor-pointer"
-            title="Move Molecule Right"
-          >
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <button
-          type="button"
-          onClick={() => handleNudge(0, -0.6)}
-          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition-all cursor-pointer"
-          title="Move Molecule Down"
-        >
-          <ArrowDown className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      {/* Floating Measurement Tape HUD */}
+      {/* Floating Measurement Angle HUD */}
       {activeMeasurement && (
-        <div className="absolute bottom-14 left-4 z-20 px-3.5 py-2 rounded-xl bg-white/95 backdrop-blur-sm border-2 border-[#00C2D1] shadow-lg animate-in fade-in flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#00C2D1]" />
-          <span className="font-montserrat font-extrabold text-xs text-[#0B1F2A]">
-            {activeMeasurement.label}: {activeMeasurement.value.toFixed(2)} {activeMeasurement.unit}
-          </span>
+        <div className="absolute bottom-5 left-5 z-20 px-4 py-2 rounded-xl bg-slate-900/90 backdrop-blur-md border border-amber-500/80 shadow-2xl animate-in fade-in flex items-center gap-2.5 text-white">
+          <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Measured Angle</span>
+            <span className="font-mono font-black text-sm text-amber-300">
+              {activeMeasurement.label}: {activeMeasurement.value.toFixed(1)}°
+            </span>
+          </div>
         </div>
       )}
-
-      {/* Bottom Floating Control Ribbon (Styles & Navigation Guide) */}
-      <div className="absolute bottom-3 inset-x-3 z-20 flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-white/90 backdrop-blur-sm border border-slate-200 text-xs shadow-xs">
-        {/* Style Selector */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-montserrat font-bold text-slate-400 uppercase">Style:</span>
-          {(['ballAndStick', 'spaceFilling', 'licorice', 'wireframe'] as DisplayStyle[]).map((st) => (
-            <button
-              key={st}
-              onClick={() => {
-                soundEngine.playTap();
-                onDisplayStyleChange(st);
-              }}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-montserrat font-bold transition-all cursor-pointer capitalize ${
-                displayStyle === st
-                  ? 'bg-[#00C2D1] text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {st === 'ballAndStick' ? 'Ball & Stick' : st === 'spaceFilling' ? 'vdW Space' : st}
-            </button>
-          ))}
-        </div>
-
-        {/* Molecular Surface Selector */}
-        {onSurfaceStyleChange && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-montserrat font-bold text-slate-400 uppercase">Surface:</span>
-            {(['none', 'vdw', 'sas'] as SurfaceStyle[]).map((sf) => (
-              <button
-                key={sf}
-                onClick={() => {
-                  soundEngine.playTap();
-                  onSurfaceStyleChange(sf);
-                }}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-montserrat font-bold transition-all cursor-pointer uppercase ${
-                  surfaceStyle === sf
-                    ? 'bg-[#00C2D1] text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {sf === 'none' ? 'Off' : sf}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Navigation & Drawing Guide */}
-        <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-slate-500">
-          <span className="text-teal-600 font-bold">Click: Drop Atom</span>
-          <span>•</span>
-          <span className="text-emerald-600 font-bold">Drag Atom: Draw Bond / Sprout</span>
-          <span>•</span>
-          <span>Right Drag: Pan</span>
-          <span>•</span>
-          <span>Wheel: Zoom</span>
-        </div>
-      </div>
     </div>
   );
 };

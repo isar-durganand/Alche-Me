@@ -40,8 +40,13 @@ import { AtomNode, BondEdge, DisplayStyle, MeasurementMode, MeasurementResult, S
 import { soundEngine } from '../../infrastructure/audio/soundEngine';
 import { progressAdapter } from '../../infrastructure/persistence/progressAdapter';
 import { relaxVseprForces, calculateHillFormula, autoSaturateHydrogens, stripAllHydrogens } from './vseprPhysics';
+import { NavRoute } from '../../components/layout/AppShell';
 
-export const MoleculeStudioScreen: React.FC = () => {
+interface MoleculeStudioScreenProps {
+  onNavigate?: (route: NavRoute) => void;
+}
+
+export const MoleculeStudioScreen: React.FC<MoleculeStudioScreenProps> = ({ onNavigate }) => {
   // 1. Core Molecular State (2D Sketcher & 3D WebGL)
   const [atoms2D, setAtoms2D] = useState<Atom2D[]>([]);
   const [bonds2D, setBonds2D] = useState<Bond2D[]>([]);
@@ -517,6 +522,18 @@ export const MoleculeStudioScreen: React.FC = () => {
             <Trophy className="w-3.5 h-3.5" />
             <span>Verify & Win</span>
           </button>
+
+          {/* Return to Hub */}
+          {onNavigate && (
+            <button
+              type="button"
+              onClick={() => onNavigate('hub')}
+              className="ml-1 px-3 py-1.5 rounded-full border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-montserrat font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+              title="Return to Alche-Me Adventure Hub"
+            >
+              <span>← Hub</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -550,7 +567,7 @@ export const MoleculeStudioScreen: React.FC = () => {
 
         {/* Right 50%: 3D WebGL Molecular Viewer (Pure Obsidian Black) */}
         {(viewMode === 'split' || viewMode === '3d') && (
-          <div className={`${viewMode === 'split' ? 'w-full md:w-1/2' : 'w-full'} h-full flex flex-col relative bg-[#050505]`}>
+          <div className={`${viewMode === 'split' ? 'w-full md:w-1/2' : 'w-full'} h-full flex flex-col relative bg-[#000000]`}>
             <MoleculeViewer3D
               rawMolfile={rawMolfile}
               rawXyz={rawXyz}
@@ -568,7 +585,7 @@ export const MoleculeStudioScreen: React.FC = () => {
               activeMeasurement={measurements[0] || null}
               formula={formula}
               compoundName={compoundName}
-              backgroundColor="#050505"
+              backgroundColor="#000000"
               onSyncFrom2D={() => sync2DTo3D(atoms2D, bonds2D, true)}
               onClean3D={handleEnergyMinimization}
             />

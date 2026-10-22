@@ -105,6 +105,15 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   const activeItem = navItems.find((n) => n.id === currentRoute);
 
+  // Dedicated Full-Screen Workbench Layout for MolView Molecule Studio
+  if (currentRoute === 'molecule-studio') {
+    return (
+      <div className="w-screen h-screen overflow-hidden bg-white select-none flex flex-col">
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#0B1F2A] flex flex-col font-sans select-none relative">
       {/* Skip to Content for Keyboard Accessibility */}
@@ -335,11 +344,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           <main 
             id="main-content" 
             tabIndex={-1} 
-            className={`flex-1 w-full focus:outline-none ${
-              currentRoute === 'molecule-studio' 
-                ? 'p-0 pb-16 md:pb-0 h-[calc(100vh-4rem)] flex flex-col overflow-hidden max-w-none' 
-                : 'p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto pb-24 md:pb-8'
-            }`}
+            className="flex-1 w-full focus:outline-none p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto pb-24 md:pb-8"
           >
             {children}
           </main>

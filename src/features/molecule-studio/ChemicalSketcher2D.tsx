@@ -398,10 +398,10 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
         return;
       }
 
-      // If clicked on existing atom: start dragging a bond line
+      // If clicked on existing atom:
       if (hitAtom) {
-        // If clicked with a heteroatom selected from the ribbon (e.g. O, N, S, Cl): mutate atom element!
-        if (hitAtom.symbol !== activeElement && activeElement !== 'C') {
+        // If element is different from atom symbol: change atom element!
+        if (hitAtom.symbol !== activeElement) {
           soundEngine.playElementPip(getElementData(activeElement).atomicNumber);
           const nextAtoms = atoms.map((a) => (a.id === hitAtom.id ? { ...a, symbol: activeElement } : a));
           commitChange(nextAtoms, bonds);
@@ -857,9 +857,26 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
                 const dx = a2.x - a1.x;
                 const dy = a2.y - a1.y;
                 const len = Math.hypot(dx, dy) || 1;
+
+                // Check if either atom shows a chemical text symbol (e.g. O, N, H, or isolated C)
+                const a1Conn = bonds.filter((ob) => ob.from === a1.id || ob.to === a1.id).length;
+                const a2Conn = bonds.filter((ob) => ob.from === a2.id || ob.to === a2.id).length;
+                const a1HasSymbol = a1.symbol !== 'C' || a1Conn === 0;
+                const a2HasSymbol = a2.symbol !== 'C' || a2Conn === 0;
+
+                const pad1 = a1HasSymbol ? 11 : 0;
+                const pad2 = a2HasSymbol ? 11 : 0;
+
+                const ux = dx / len;
+                const uy = dy / len;
+                const p1x = a1.x + ux * pad1;
+                const p1y = a1.y + uy * pad1;
+                const p2x = a2.x - ux * pad2;
+                const p2y = a2.y - uy * pad2;
+
                 // Normal offset vector for double/triple bonds
-                const nx = (-dy / len) * 3.5;
-                const ny = (dx / len) * 3.5;
+                const nx = (-uy) * 3.5;
+                const ny = ux * 3.5;
 
                 return (
                   <g key={b.id} className="transition-all">
@@ -880,12 +897,12 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
                     {/* Single Bond */}
                     {b.order === 1 && (
                       <line
-                        x1={a1.x}
-                        y1={a1.y}
-                        x2={a2.x}
-                        y2={a2.y}
+                        x1={p1x}
+                        y1={p1y}
+                        x2={p2x}
+                        y2={p2y}
                         stroke="#1E293B"
-                        strokeWidth={2.2}
+                        strokeWidth={2.4}
                         strokeLinecap="round"
                       />
                     )}
@@ -894,21 +911,21 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
                     {b.order === 2 && (
                       <>
                         <line
-                          x1={a1.x + nx}
-                          y1={a1.y + ny}
-                          x2={a2.x + nx}
-                          y2={a2.y + ny}
+                          x1={p1x + nx}
+                          y1={p1y + ny}
+                          x2={p2x + nx}
+                          y2={p2y + ny}
                           stroke="#1E293B"
-                          strokeWidth={2.2}
+                          strokeWidth={2.4}
                           strokeLinecap="round"
                         />
                         <line
-                          x1={a1.x - nx}
-                          y1={a1.y - ny}
-                          x2={a2.x - nx}
-                          y2={a2.y - ny}
+                          x1={p1x - nx}
+                          y1={p1y - ny}
+                          x2={p2x - nx}
+                          y2={p2y - ny}
                           stroke="#1E293B"
-                          strokeWidth={2.2}
+                          strokeWidth={2.4}
                           strokeLinecap="round"
                         />
                       </>
@@ -918,28 +935,28 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
                     {b.order === 3 && (
                       <>
                         <line
-                          x1={a1.x}
-                          y1={a1.y}
-                          x2={a2.x}
-                          y2={a2.y}
+                          x1={p1x}
+                          y1={p1y}
+                          x2={p2x}
+                          y2={p2y}
                           stroke="#1E293B"
-                          strokeWidth={2.2}
+                          strokeWidth={2.4}
                           strokeLinecap="round"
                         />
                         <line
-                          x1={a1.x + nx * 1.5}
-                          y1={a1.y + ny * 1.5}
-                          x2={a2.x + nx * 1.5}
-                          y2={a2.y + ny * 1.5}
+                          x1={p1x + nx * 1.5}
+                          y1={p1y + ny * 1.5}
+                          x2={p2x + nx * 1.5}
+                          y2={p2y + ny * 1.5}
                           stroke="#1E293B"
                           strokeWidth={2.0}
                           strokeLinecap="round"
                         />
                         <line
-                          x1={a1.x - nx * 1.5}
-                          y1={a1.y - ny * 1.5}
-                          x2={a2.x - nx * 1.5}
-                          y2={a2.y - ny * 1.5}
+                          x1={p1x - nx * 1.5}
+                          y1={p1y - ny * 1.5}
+                          x2={p2x - nx * 1.5}
+                          y2={p2y - ny * 1.5}
                           stroke="#1E293B"
                           strokeWidth={2.0}
                           strokeLinecap="round"
