@@ -210,8 +210,43 @@ export function validateMoleculeValence(
 }
 
 // ==========================================
-// AUTOMATED HYDROGEN SATURATION
+// AUTOMATED HYDROGEN SATURATION & STRIPPING
 // ==========================================
+
+export function stripAllHydrogens(
+  atoms: AtomNode[],
+  bonds: BondEdge[]
+): { updatedAtoms: AtomNode[]; updatedBonds: BondEdge[]; removedCount: number } {
+  const hIds = new Set(atoms.filter((a) => a.symbol === 'H').map((a) => a.id));
+  const removedCount = hIds.size;
+
+  if (removedCount === 0) {
+    return { updatedAtoms: atoms, updatedBonds: bonds, removedCount: 0 };
+  }
+
+  const remainingAtoms = atoms
+    .filter((a) => !hIds.has(a.id))
+    .map((a, idx) => ({ ...a, index: idx }));
+
+  const remainingBonds = bonds.filter(
+    (b) => !hIds.has(b.from as string) && !hIds.has(b.to as string)
+  );
+
+  // If all atoms were hydrogens, leave at least one Carbon
+  if (remainingAtoms.length === 0) {
+    return {
+      updatedAtoms: [{ id: 'b-0', index: 0, symbol: 'C', x: 0, y: 0, z: 0 }],
+      updatedBonds: [],
+      removedCount,
+    };
+  }
+
+  return {
+    updatedAtoms: remainingAtoms,
+    updatedBonds: remainingBonds,
+    removedCount,
+  };
+}
 
 export function autoSaturateHydrogens(
   atoms: AtomNode[],
@@ -422,7 +457,91 @@ export function relaxVseprForces(
       forces[idx2].fz -= forceMag * uz;
     }
 
-    // 2. Electrostatic / Steric Repulsion between all atom pairs
+    // 2. VSEPR Valence Angle Restoring Forces (UFF / MM2 / ArgusLab Harmonic Potential)
+    const kAngle = 0.28;
+    // Map neighbors for each atom
+    const atomNeighbors: Record<string, { id: string; order: number }[]> = {};
+    for (const a of pos) atomNeighbors[a.id] = [];
+    for (const b of bonds) {
+      if (atomNeighbors[b.from]) atomNeighbors[b.from].push({ id: b.to as string, order: b.order });
+      if (atomNeighbors[b.to]) atomNeighbors[b.to].push({ id: b.from as string, order: b.order });
+    }
+
+    for (let cIdx = 0; cIdx < pos.length; cIdx++) {
+      const center = pos[cIdx];
+      const nbs = atomNeighbors[center.id] || [];
+      if (nbs.length < 2) continue;
+
+      // Determine ideal VSEPR angle based on coordination number and bond orders
+      const hasTriple = nbs.some((n) => n.order === 3);
+      const hasDouble = nbs.some((n) => n.order === 2);
+      let targetRad = (109.47 * Math.PI) / 180; // default tetrahedral sp3
+
+      if (nbs.length === 2) {
+        targetRad = hasTriple || nbs.filter((n) => n.order === 2).length >= 2
+          ? Math.PI // Linear 180 deg
+          : (104.5 * Math.PI) / 180; // Bent (water)
+      } else if (nbs.length === 3) {
+        targetRad = hasDouble
+          ? (120.0 * Math.PI) / 180 // Trigonal planar 120 deg
+          : (107.3 * Math.PI) / 180; // Trigonal pyramidal
+      } else if (nbs.length === 4) {
+        targetRad = (109.47 * Math.PI) / 180; // Tetrahedral
+      } else if (nbs.length === 5) {
+        targetRad = (105.0 * Math.PI) / 180;
+      } else if (nbs.length >= 6) {
+        targetRad = (90.0 * Math.PI) / 180; // Octahedral
+      }
+
+      // Apply restoring torque to all neighbor pairs
+      for (let i = 0; i < nbs.length; i++) {
+        for (let j = i + 1; j < nbs.length; j++) {
+          const idx1 = pos.findIndex((p) => p.id === nbs[i].id);
+          const idx2 = pos.findIndex((p) => p.id === nbs[j].id);
+          if (idx1 === -1 || idx2 === -1) continue;
+
+          const p1 = pos[idx1];
+          const p2 = pos[idx2];
+
+          const v1x = p1.x - center.x;
+          const v1y = p1.y - center.y;
+          const v1z = p1.z - center.z;
+          const d1 = Math.sqrt(v1x * v1x + v1y * v1y + v1z * v1z) || 1.0;
+
+          const v2x = p2.x - center.x;
+          const v2y = p2.y - center.y;
+          const v2z = p2.z - center.z;
+          const d2 = Math.sqrt(v2x * v2x + v2y * v2y + v2z * v2z) || 1.0;
+
+          const dot = (v1x * v2x + v1y * v2y + v1z * v2z) / (d1 * d2);
+          const clampedDot = Math.max(-0.9999, Math.min(0.9999, dot));
+          const currentAngle = Math.acos(clampedDot);
+
+          const angleDiff = currentAngle - targetRad;
+          // Restoring torque magnitude
+          const torque = kAngle * angleDiff;
+
+          // Normal direction to separate or bring together vectors
+          const u1x = v1x / d1, u1y = v1y / d1, u1z = v1z / d1;
+          const u2x = v2x / d2, u2y = v2y / d2, u2z = v2z / d2;
+
+          forces[idx1].fx -= torque * (u2x - u1x * clampedDot);
+          forces[idx1].fy -= torque * (u2y - u1y * clampedDot);
+          forces[idx1].fz -= torque * (u2z - u1z * clampedDot);
+
+          forces[idx2].fx -= torque * (u1x - u2x * clampedDot);
+          forces[idx2].fy -= torque * (u1y - u2y * clampedDot);
+          forces[idx2].fz -= torque * (u1z - u2z * clampedDot);
+
+          // Equal and opposite on center atom
+          forces[cIdx].fx += torque * (u2x + u1x) * 0.5;
+          forces[cIdx].fy += torque * (u2y + u1y) * 0.5;
+          forces[cIdx].fz += torque * (u2z + u1z) * 0.5;
+        }
+      }
+    }
+
+    // 3. Electrostatic / Steric Repulsion between all atom pairs
     for (let i = 0; i < pos.length; i++) {
       for (let j = i + 1; j < pos.length; j++) {
         const dx = pos[j].x - pos[i].x;

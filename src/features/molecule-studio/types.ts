@@ -101,8 +101,10 @@ export interface MoleculeStructure {
 }
 
 export type DisplayStyle = 'ballAndStick' | 'spaceFilling' | 'licorice' | 'wireframe';
+export type SurfaceStyle = 'none' | 'vdw' | 'sas';
 export type MeasurementMode = 'distance' | 'angle' | 'dihedral' | 'none';
 export type OrbitalType = 'HOMO' | 'LUMO' | 'NONE';
+export type BuilderToolMode = 'addAtom' | 'drawBond' | 'replaceElement' | 'erase' | 'select';
 
 export interface MeasurementResult {
   id: string;

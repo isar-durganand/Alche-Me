@@ -6,8 +6,11 @@ import {
   calculateMolarMass, 
   validateMoleculeValence, 
   autoSaturateHydrogens, 
+  stripAllHydrogens,
   relaxVseprForces 
 } from '../src/features/molecule-studio/vseprPhysics';
+import { FRAGMENT_TEMPLATES, insertFragment } from '../src/features/molecule-studio/fragmentTemplates';
+import { parseSmiles, generateSmiles, parseXyz, exportToXyz, exportToMolfile } from '../src/features/molecule-studio/smilesEngine';
 import { CURATED_MOLECULES } from '../src/features/molecule-studio/moleculeData';
 import { AtomNode, BondEdge, ELEMENT_REGISTRY } from '../src/features/molecule-studio/types';
 
@@ -110,6 +113,84 @@ describe('Alche-Me — 3D Molecule Studio & VSEPR Physics Engine', () => {
     expect(res.addedCount).toBe(4);
     expect(res.updatedAtoms.length).toBe(5);
     expect(res.updatedBonds.length).toBe(4);
+  });
+
+  it('should strip all hydrogen atoms to reveal clean skeletal framework', () => {
+    const ethanol: AtomNode[] = [
+      { id: 'c1', index: 0, symbol: 'C', x: 0, y: 0, z: 0 },
+      { id: 'c2', index: 1, symbol: 'C', x: 1.5, y: 0, z: 0 },
+      { id: 'o1', index: 2, symbol: 'O', x: 2.2, y: 1.2, z: 0 },
+      { id: 'h1', index: 3, symbol: 'H', x: -0.5, y: 0, z: 0 },
+      { id: 'h2', index: 4, symbol: 'H', x: 0, y: 1.0, z: 0 },
+      { id: 'h3', index: 5, symbol: 'H', x: 0, y: -1.0, z: 0 },
+    ];
+    const bonds: BondEdge[] = [
+      { id: 'b1', from: 'c1', to: 'c2', order: 1 },
+      { id: 'b2', from: 'c2', to: 'o1', order: 1 },
+      { id: 'b3', from: 'c1', to: 'h1', order: 1 },
+      { id: 'b4', from: 'c1', to: 'h2', order: 1 },
+      { id: 'b5', from: 'c1', to: 'h3', order: 1 },
+    ];
+    const stripped = stripAllHydrogens(ethanol, bonds);
+    expect(stripped.removedCount).toBe(3);
+    expect(stripped.updatedAtoms.length).toBe(3);
+    expect(stripped.updatedAtoms.every((a) => a.symbol !== 'H')).toBe(true);
+    expect(stripped.updatedBonds.length).toBe(2);
+  });
+
+  it('should insert fragment templates and attach to host atoms accurately', () => {
+    expect(FRAGMENT_TEMPLATES.length).toBeGreaterThanOrEqual(10);
+    const benzene = FRAGMENT_TEMPLATES.find((t) => t.id === 'benzene')!;
+    expect(benzene).toBeDefined();
+    expect(benzene.atoms.length).toBe(12); // 6 C + 6 H
+    expect(benzene.bonds.length).toBe(12);
+
+    const baseCarbon: AtomNode[] = [{ id: 'host-0', index: 0, symbol: 'C', x: 0, y: 0, z: 0 }];
+    const attached = insertFragment(baseCarbon, [], benzene, 0);
+    expect(attached.newAtoms.length).toBe(13); // 1 host + 12 benzene
+    expect(attached.newBonds.length).toBe(13); // 12 benzene + 1 link bond
+    expect(attached.newBonds.some((b) => b.from === 'host-0')).toBe(true);
+  });
+
+  it('should parse and generate SMILES strings for organic structures', () => {
+    // Ethanol CCO
+    const parsedEthanol = parseSmiles('CCO');
+    expect(parsedEthanol.atoms.length).toBeGreaterThan(0);
+    const heavyAtoms = parsedEthanol.atoms.filter((a) => a.symbol !== 'H');
+    expect(heavyAtoms.length).toBe(3);
+    expect(heavyAtoms.map((a) => a.symbol).sort()).toEqual(['C', 'C', 'O']);
+
+    // Benzene aromatic ring c1ccccc1
+    const parsedBenzene = parseSmiles('c1ccccc1');
+    const bHeavy = parsedBenzene.atoms.filter((a) => a.symbol !== 'H');
+    expect(bHeavy.length).toBe(6);
+
+    // SMILES generator
+    const smi = generateSmiles(parsedEthanol.atoms, parsedEthanol.bonds);
+    expect(smi).toBeTruthy();
+    expect(smi.includes('C')).toBe(true);
+    expect(smi.includes('O')).toBe(true);
+  });
+
+  it('should support XYZ and MDL Molfile export formats matching standard CAD specifications', () => {
+    const testAtoms: AtomNode[] = [
+      { id: 'c1', index: 0, symbol: 'C', x: 0.0, y: 0.0, z: 0.0 },
+      { id: 'o1', index: 1, symbol: 'O', x: 1.2, y: 0.0, z: 0.0 },
+    ];
+    const testBonds: BondEdge[] = [{ id: 'b1', from: 'c1', to: 'o1', order: 2 }];
+
+    // XYZ format
+    const xyz = exportToXyz(testAtoms, 'Carbon monoxide test');
+    expect(xyz.startsWith('2\nCarbon monoxide test')).toBe(true);
+    const parsedXyz = parseXyz(xyz);
+    expect(parsedXyz.atoms.length).toBe(2);
+    expect(parsedXyz.atoms[0].symbol).toBe('C');
+    expect(parsedXyz.atoms[1].symbol).toBe('O');
+
+    // Molfile V2000
+    const molfile = exportToMolfile(testAtoms, testBonds, 'Carbon monoxide');
+    expect(molfile.includes('V2000')).toBe(true);
+    expect(molfile.includes('M  END')).toBe(true);
   });
 
   it('should relax 3D coordinates via VSEPR force-field physics without generating NaNs', () => {

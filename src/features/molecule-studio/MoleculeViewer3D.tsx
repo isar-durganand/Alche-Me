@@ -14,7 +14,8 @@ import {
   MeasurementMode, 
   MeasurementResult, 
   OrbitalType,
-  OrbitalLobe 
+  OrbitalLobe,
+  SurfaceStyle 
 } from './types';
 import { 
   RotateCw, 
@@ -28,7 +29,9 @@ import {
   Compass, 
   Ruler, 
   Sparkles,
-  RefreshCw
+  RefreshCw,
+  Camera,
+  Activity
 } from 'lucide-react';
 import { soundEngine } from '../../infrastructure/audio/soundEngine';
 
@@ -43,6 +46,8 @@ interface MoleculeViewer3DProps {
   atoms: AtomNode[];
   displayStyle: DisplayStyle;
   onDisplayStyleChange: (style: DisplayStyle) => void;
+  surfaceStyle?: SurfaceStyle;
+  onSurfaceStyleChange?: (style: SurfaceStyle) => void;
   measurementMode: MeasurementMode;
   onMeasurementModeChange: (mode: MeasurementMode) => void;
   selectedAtomIndices: number[];
@@ -57,6 +62,7 @@ interface MoleculeViewer3DProps {
   activeMeasurement?: MeasurementResult | null;
   formula?: string;
   compoundName?: string;
+  activeToolMode?: string;
 }
 
 export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
@@ -64,6 +70,8 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
   atoms,
   displayStyle,
   onDisplayStyleChange,
+  surfaceStyle = 'none',
+  onSurfaceStyleChange,
   measurementMode,
   onMeasurementModeChange,
   selectedAtomIndices,
@@ -78,6 +86,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
   activeMeasurement,
   formula,
   compoundName,
+  activeToolMode,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<any>(null);
@@ -128,7 +137,20 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
           break;
       }
 
-      // 2. Labels for Atoms
+      // 2. Molecular Surface Representation (MolDraw / ArgusLab feature)
+      if (surfaceStyle !== 'none' && $3Dmol.SurfaceType) {
+        try {
+          const sType = surfaceStyle === 'sas' ? $3Dmol.SurfaceType.SAS : $3Dmol.SurfaceType.VDW;
+          viewer.addSurface(sType, {
+            opacity: 0.50,
+            colorscheme: 'Jmol',
+          });
+        } catch (err) {
+          console.warn('Surface generation caught:', err);
+        }
+      }
+
+      // 3. Labels for Atoms
       if (showLabels && atoms.length > 0) {
         atoms.forEach((atom, idx) => {
           viewer.addLabel(`${atom.symbol}${idx + 1}`, {
@@ -143,7 +165,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         });
       }
 
-      // 3. Highlight Selected Measurement Atoms
+      // 4. Highlight Selected Measurement Atoms
       selectedAtomIndices.forEach((atomIdx, rank) => {
         const atom = atoms[atomIdx];
         if (atom) {
@@ -165,7 +187,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         }
       });
 
-      // 4. Draw Measurement Connecting Line
+      // 5. Draw Measurement Connecting Line
       if (selectedAtomIndices.length >= 2) {
         for (let i = 0; i < selectedAtomIndices.length - 1; i++) {
           const a1 = atoms[selectedAtomIndices[i]];
@@ -181,7 +203,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         }
       }
 
-      // 5. HOMO-LUMO 3D Wavefunction Lobes
+      // 6. HOMO-LUMO 3D Wavefunction Lobes
       if (orbitalType === 'HOMO' || orbitalType === 'LUMO') {
         const activeLobes = orbitalType === 'HOMO' ? homoLobes : lumoLobes;
 
@@ -222,7 +244,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         }
       }
 
-      // 6. Interactive Click Selection on Atoms
+      // 7. Interactive Click Selection on Atoms
       model.setClickable({}, true, (clickedAtom: any) => {
         soundEngine.playElementPip(clickedAtom.atomic_number || 12);
         if (clickedAtom && typeof clickedAtom.index === 'number') {
@@ -230,7 +252,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         }
       });
 
-      // 7. Auto-Center: zoomTo() centers molecule squarely in the screen
+      // 8. Auto-Center: zoomTo() centers molecule squarely in the screen
       if (lastXyzRef.current !== rawXyz) {
         viewer.zoomTo(300);
         lastXyzRef.current = rawXyz;
@@ -241,7 +263,8 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
   }, [
     rawXyz, 
     atoms, 
-    displayStyle, 
+    displayStyle,
+    surfaceStyle, 
     showLabels, 
     selectedAtomIndices, 
     orbitalType, 
@@ -277,6 +300,23 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
     if (viewerRef.current) {
       viewerRef.current.zoom(factor, 200);
       viewerRef.current.render();
+    }
+  };
+
+  // Snapshot PNG export
+  const handleTakeSnapshot = () => {
+    soundEngine.playTap();
+    if (!viewerRef.current) return;
+    try {
+      const uri = viewerRef.current.pngURI();
+      if (uri) {
+        const link = document.createElement('a');
+        link.download = `${(compoundName || 'molecule').toLowerCase().replace(/\s+/g, '_')}_3d.png`;
+        link.href = uri;
+        link.click();
+      }
+    } catch (e) {
+      console.warn('Canvas snapshot export error:', e);
     }
   };
 
@@ -364,6 +404,16 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
           <ZoomOut className="w-4 h-4" />
         </button>
 
+        {/* Snapshot PNG (MolDraw & ArgusLab Export Feature) */}
+        <button
+          type="button"
+          onClick={handleTakeSnapshot}
+          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+          title="Download PNG Snapshot"
+        >
+          <Camera className="w-4 h-4 text-emerald-600" />
+        </button>
+
         {/* Labels Toggle */}
         <button
           type="button"
@@ -424,6 +474,29 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
             </button>
           ))}
         </div>
+
+        {/* Molecular Surface Selector */}
+        {onSurfaceStyleChange && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-montserrat font-bold text-slate-400 uppercase">Surface:</span>
+            {(['none', 'vdw', 'sas'] as SurfaceStyle[]).map((sf) => (
+              <button
+                key={sf}
+                onClick={() => {
+                  soundEngine.playTap();
+                  onSurfaceStyleChange(sf);
+                }}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-montserrat font-bold transition-all cursor-pointer uppercase ${
+                  surfaceStyle === sf
+                    ? 'bg-[#00C2D1] text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {sf === 'none' ? 'Off' : sf}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* 6-DOF Mouse Navigation Guide */}
         <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-slate-500">
