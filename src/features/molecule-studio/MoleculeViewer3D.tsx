@@ -2,22 +2,18 @@
  * Alche-Me — 3D Molecular Graphics Engine ($3Dmol WebGL)
  * 100% physically and geometrically accurate molecular viewer:
  * - Native 3Dmol SDF/Molfile (V2000) explicit bond connectivity
- * - Direct Click-to-Place Free Atom at exact 3D coordinates
- * - Drag-from-Atom to Draw Bonds (connect to another atom OR sprout into empty space)
- * - Move individual atom in 3D by dragging
- * - 6-DOF controls: Left-click rotate, Right-click pan/drag, Scroll zoom
- * - Pan/Drag Mode Switcher + Canvas Directional Nudge D-Pad
- * - Click tolerance fix (8px) ensuring 100% reliable atom selection
+ * - 6-DOF controls: Left-click rotate, Right-click pan, Scroll zoom
+ * - Native click-to-select atoms for VSEPR bond angle measurement
  * - On-canvas Bond Angle floating HUD badge & dashed vector arcs
- * - Live interactive SVG drag-bond preview line & cursor ghost
+ * - Seamless ResizeObserver for crisp rendering during sidebar toggle or window resize
  * - High-resolution canvas PNG snapshot export
+ * - Energy Minimization (VSEPR 3D Optimization) trigger
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   AtomNode, 
   BondEdge,
-  BuilderToolMode,
   DisplayStyle, 
   MeasurementMode, 
   MeasurementResult, 
@@ -28,23 +24,10 @@ import {
 import { calculateAngleDetails } from './vseprPhysics';
 import { 
   RotateCw, 
-  ZoomIn, 
-  ZoomOut, 
   Focus, 
-  Layers, 
-  Tag, 
-  Maximize2, 
-  Minimize2, 
   Compass, 
-  Ruler, 
   Sparkles,
   Camera,
-  Hand,
-  Move,
-  ArrowUp,
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
   Zap
 } from 'lucide-react';
 import { soundEngine } from '../../infrastructure/audio/soundEngine';
@@ -68,19 +51,13 @@ interface MoleculeViewer3DProps {
   onMeasurementModeChange: (mode: MeasurementMode) => void;
   selectedAtomIndices: number[];
   onAtomSelect: (atomIndex: number) => void;
-  onCanvasEmptyClick?: (coords: { x: number; y: number; z: number }) => void;
-  onBondDragConnect?: (fromIndex: number, toIndex: number) => void;
-  onBondDragSprout?: (fromIndex: number, toCoords: { x: number; y: number; z: number }) => void;
-  onAtomDragMove?: (atomIndex: number, newCoords: { x: number; y: number; z: number }) => void;
-  onBondClick?: (bondId: string) => void;
-  onCanvasDragBond?: (startCoords: { x: number; y: number; z: number }, endCoords: { x: number; y: number; z: number }) => void;
   isBuilderMode?: boolean;
   backgroundColor?: string;
   onSyncFrom2D?: () => void;
   onClean3D?: () => void;
   showLabels: boolean;
   onToggleLabels: () => void;
-  orbitalType: OrbitalType;
+  orbitalType?: OrbitalType;
   orbitalIsoval?: number;
   orbitalOpacity?: number;
   homoLobes?: OrbitalLobe[];
@@ -88,17 +65,6 @@ interface MoleculeViewer3DProps {
   activeMeasurement?: MeasurementResult | null;
   formula?: string;
   compoundName?: string;
-  activeToolMode?: BuilderToolMode;
-  activeElementSymbol?: string;
-}
-
-interface DragPreviewState {
-  sourceAtomIndex: number;
-  startX: number;
-  startY: number;
-  currentX: number;
-  currentY: number;
-  targetAtomIndex: number | null;
 }
 
 export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
@@ -114,19 +80,13 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
   onMeasurementModeChange,
   selectedAtomIndices,
   onAtomSelect,
-  onCanvasEmptyClick,
-  onBondDragConnect,
-  onBondDragSprout,
-  onAtomDragMove,
-  onBondClick,
-  onCanvasDragBond,
   isBuilderMode = false,
-  backgroundColor = '#050505',
+  backgroundColor = '#000000',
   onSyncFrom2D,
   onClean3D,
   showLabels,
   onToggleLabels,
-  orbitalType,
+  orbitalType = 'NONE',
   orbitalIsoval = 0.04,
   orbitalOpacity = 0.75,
   homoLobes,
@@ -134,456 +94,46 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
   activeMeasurement,
   formula,
   compoundName,
-  activeToolMode = 'addAtom',
-  activeElementSymbol = 'C',
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<any>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [navigationMode, setNavigationMode] = useState<'rotate' | 'pan'>('rotate');
   const lastModelKeyRef = useRef<string | null>(null);
 
-  // Live SVG bond drag preview state
-  const [dragState, setDragState] = useState<DragPreviewState | null>(null);
-
-  // Keep callback and data refs fresh
+  // Keep atom select callback ref fresh
   const onAtomSelectRef = useRef(onAtomSelect);
   onAtomSelectRef.current = onAtomSelect;
-  const onCanvasEmptyClickRef = useRef(onCanvasEmptyClick);
-  onCanvasEmptyClickRef.current = onCanvasEmptyClick;
-  const onBondDragConnectRef = useRef(onBondDragConnect);
-  onBondDragConnectRef.current = onBondDragConnect;
-  const onBondDragSproutRef = useRef(onBondDragSprout);
-  onBondDragSproutRef.current = onBondDragSprout;
-  const onAtomDragMoveRef = useRef(onAtomDragMove);
-  onAtomDragMoveRef.current = onAtomDragMove;
-  const onBondClickRef = useRef(onBondClick);
-  onBondClickRef.current = onBondClick;
-  const onCanvasDragBondRef = useRef(onCanvasDragBond);
-  onCanvasDragBondRef.current = onCanvasDragBond;
 
-  const navModeRef = useRef<'rotate' | 'pan'>('rotate');
-  navModeRef.current = navigationMode;
-  const activeToolModeRef = useRef<BuilderToolMode>(activeToolMode);
-  activeToolModeRef.current = activeToolMode;
-  const atomsRef = useRef<AtomNode[]>(atoms);
-  atomsRef.current = atoms;
-  const bondsRef = useRef<BondEdge[]>(bonds);
-  bondsRef.current = bonds;
-
-  // Pointer drag states
-  const pointerDownInfo = useRef<{
-    startX: number;
-    startY: number;
-    button: number;
-    atomIndex: number | null;
-    isPanning: boolean;
-    hasMoved: boolean;
-  } | null>(null);
-
-  // Helper: Distance from 2D point to line segment
-  const distToSegment = (
-    p: { x: number; y: number },
-    v: { x: number; y: number },
-    w: { x: number; y: number }
-  ): number => {
-    const l2 = (v.x - w.x) * (v.x - w.x) + (v.y - w.y) * (v.y - w.y);
-    if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
-    let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
-    t = Math.max(0, Math.min(1, t));
-    return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
-  };
-
-  // Helper: Vector and Quaternion math for 3Dmol scene unprojection
-  const applyQuaternion = (
-    v: { x: number; y: number; z: number },
-    q: { x: number; y: number; z: number; w: number }
-  ) => {
-    const x = v.x, y = v.y, z = v.z;
-    const qx = q.x, qy = q.y, qz = q.z, qw = q.w;
-    const ix = qw * x + qy * z - qz * y;
-    const iy = qw * y + qz * x - qx * z;
-    const iz = qw * z + qx * y - qy * x;
-    const iw = -qx * x - qy * y - qz * z;
-    return {
-      x: ix * qw + iw * -qx + iy * -qz - iz * -qy,
-      y: iy * qw + iw * -qy + iz * -qx - ix * -qz,
-      z: iz * qw + iw * -qz + ix * -qy - iy * -qx,
-    };
-  };
-
-  const invertQuaternion = (q: { x: number; y: number; z: number; w: number }) => ({
-    x: -q.x,
-    y: -q.y,
-    z: -q.z,
-    w: q.w,
-  });
-
-  // Convert screen client pixel coordinates to exact 3D world coordinates on viewing plane
-  const get3DCoordsFromScreen = useCallback((clientX: number, clientY: number): { x: number; y: number; z: number } => {
-    const viewer = viewerRef.current;
+  // Prevent right-click context menu so right-click pan works smoothly
+  useEffect(() => {
     const el = containerRef.current;
-    if (!viewer || !el) return { x: 0, y: 0, z: 0 };
-
-    const rect = el.getBoundingClientRect();
-    const canvasX = clientX - rect.left;
-    const canvasY = clientY - rect.top;
-
-    const ndcX = (canvasX / rect.width) * 2 - 1;
-    const ndcY = -(canvasY / rect.height) * 2 + 1;
-
-    // Cast camera ray through this NDC coordinate
-    if (viewer.raycaster && viewer.camera) {
-      try {
-        viewer.raycaster.setFromCamera({ x: ndcX, y: ndcY, z: -1 }, viewer.camera);
-        const rayOrigin = viewer.raycaster.ray.origin;
-        const rayDir = viewer.raycaster.ray.direction;
-
-        const rotQuat = viewer.rotationGroup?.quaternion || { x: 0, y: 0, z: 0, w: 1 };
-        const rotPos = viewer.rotationGroup?.position || { x: 0, y: 0, z: 0 };
-        const modelPos = viewer.modelGroup?.position || { x: 0, y: 0, z: 0 };
-
-        // Molecule center in world space
-        const modelCenterWorld = applyQuaternion(modelPos, rotQuat);
-        modelCenterWorld.x += rotPos.x;
-        modelCenterWorld.y += rotPos.y;
-        modelCenterWorld.z += rotPos.z;
-
-        // Camera view normal (screen plane normal)
-        const camDir = { x: 0, y: 0, z: -1 };
-
-        const denom = rayDir.x * camDir.x + rayDir.y * camDir.y + rayDir.z * camDir.z;
-        if (Math.abs(denom) > 1e-6) {
-          const num =
-            (modelCenterWorld.x - rayOrigin.x) * camDir.x +
-            (modelCenterWorld.y - rayOrigin.y) * camDir.y +
-            (modelCenterWorld.z - rayOrigin.z) * camDir.z;
-          const t = num / denom;
-
-          const hitWorld = {
-            x: rayOrigin.x + t * rayDir.x,
-            y: rayOrigin.y + t * rayDir.y,
-            z: rayOrigin.z + t * rayDir.z,
-          };
-
-          const relWorld = {
-            x: hitWorld.x - rotPos.x,
-            y: hitWorld.y - rotPos.y,
-            z: hitWorld.z - rotPos.z,
-          };
-
-          const unrotated = applyQuaternion(relWorld, invertQuaternion(rotQuat));
-          return {
-            x: Math.round((unrotated.x - modelPos.x) * 100) / 100,
-            y: Math.round((unrotated.y - modelPos.y) * 100) / 100,
-            z: 0,
-          };
-        }
-      } catch (_) {}
-    }
-
-    // Fallback if raycaster not ready
-    return {
-      x: Math.round(((canvasX - rect.width / 2) * 0.02) * 100) / 100,
-      y: Math.round((-(canvasY - rect.height / 2) * 0.02) * 100) / 100,
-      z: 0,
+    if (!el) return;
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    el.addEventListener('contextmenu', handleContextMenu);
+    return () => {
+      el.removeEventListener('contextmenu', handleContextMenu);
     };
   }, []);
 
-  // Raycast to find atom under screen cursor
-  const getAtomAtScreen = useCallback((clientX: number, clientY: number): number | null => {
-    const viewer = viewerRef.current;
-    const el = containerRef.current;
-    if (!viewer || !el || !viewer.clickables || viewer.clickables.length === 0) return null;
-
-    try {
-      const rect = el.getBoundingClientRect();
-      const canvasX = clientX - rect.left;
-      const canvasY = clientY - rect.top;
-      const ndcX = (canvasX / rect.width) * 2 - 1;
-      const ndcY = -(canvasY / rect.height) * 2 + 1;
-
-      const targets = viewer.targetedObjects(ndcX, ndcY, viewer.clickables);
-      if (targets && targets.length > 0 && targets[0].clickable) {
-        const item = targets[0].clickable;
-        if (typeof item.index === 'number') {
-          return item.index;
-        }
-      }
-    } catch (_) {}
-    return null;
-  }, []);
-
-  // Set up 6-DOF capturing pointer drag handlers
+  // ResizeObserver to handle container size changes (e.g. sidebar toggle or window resize)
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    const handlePointerDown = (e: PointerEvent) => {
-      const viewer = viewerRef.current;
-      if (!viewer) return;
-
-      const clientX = e.clientX;
-      const clientY = e.clientY;
-
-      // 1. Right-click OR Pan Mode: Start whole-molecule panning
-      if (e.button === 2 || (e.button === 0 && navModeRef.current === 'pan')) {
-        pointerDownInfo.current = {
-          startX: clientX,
-          startY: clientY,
-          button: e.button,
-          atomIndex: null,
-          isPanning: true,
-          hasMoved: false,
-        };
-        try {
-          el.setPointerCapture(e.pointerId);
-        } catch (_) {}
-        e.preventDefault();
-        e.stopPropagation();
-        return;
+    const ro = new ResizeObserver(() => {
+      if (viewerRef.current) {
+        viewerRef.current.resize();
+        viewerRef.current.render();
       }
-
-      // 2. Left-Click (button 0): Check if clicked on an atom
-      if (e.button === 0) {
-        const hitAtomIndex = getAtomAtScreen(clientX, clientY);
-
-        pointerDownInfo.current = {
-          startX: clientX,
-          startY: clientY,
-          button: 0,
-          atomIndex: hitAtomIndex,
-          isPanning: false,
-          hasMoved: false,
-        };
-
-        // When in drawing/builder tool modes, always capture pointer and prevent 3Dmol rotation
-        const isDrawingTool =
-          activeToolModeRef.current === 'addAtom' ||
-          activeToolModeRef.current === 'drawBond' ||
-          activeToolModeRef.current === 'moveAtom' ||
-          activeToolModeRef.current === 'replaceElement' ||
-          activeToolModeRef.current === 'erase';
-
-        if (hitAtomIndex !== null || isDrawingTool) {
-          try {
-            el.setPointerCapture(e.pointerId);
-          } catch (_) {}
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }
-    };
-
-    const handlePointerMove = (e: PointerEvent) => {
-      const info = pointerDownInfo.current;
-      if (!info) return;
-
-      const clientX = e.clientX;
-      const clientY = e.clientY;
-      const dx = clientX - info.startX;
-      const dy = clientY - info.startY;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist > 10) {
-        info.hasMoved = true;
-      }
-
-      // Case A: Panning whole molecule
-      if (info.isPanning) {
-        const viewer = viewerRef.current;
-        if (viewer && viewer.modelGroup) {
-          const zoomDist = viewer.rotationGroup ? Math.abs(viewer.rotationGroup.position.z) || 40 : 40;
-          const scale = 0.0035 * (zoomDist / 20);
-          viewer.modelGroup.position.x += (clientX - info.startX) * scale;
-          viewer.modelGroup.position.y -= (clientY - info.startY) * scale;
-          viewer.render();
-        }
-        info.startX = clientX;
-        info.startY = clientY;
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-
-      // Case B: Dragging on an atom
-      if (info.atomIndex !== null) {
-        const viewer = viewerRef.current;
-        if (!viewer) return;
-
-        // Tool mode: move individual atom in 3D
-        if (activeToolModeRef.current === 'moveAtom') {
-          const newCoords = get3DCoordsFromScreen(clientX, clientY);
-          if (onAtomDragMoveRef.current) {
-            onAtomDragMoveRef.current(info.atomIndex, newCoords);
-          }
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-
-        // Tool mode: Drag-to-Bond (Sprout or Connect)
-        if (dist > 8) {
-          const hoveredAtom = getAtomAtScreen(clientX, clientY);
-          const validHover = hoveredAtom !== null && hoveredAtom !== info.atomIndex ? hoveredAtom : null;
-
-          const rect = el.getBoundingClientRect();
-          setDragState({
-            sourceAtomIndex: info.atomIndex,
-            startX: info.startX - rect.left,
-            startY: info.startY - rect.top,
-            currentX: clientX - rect.left,
-            currentY: clientY - rect.top,
-            targetAtomIndex: validHover,
-          });
-
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        return;
-      }
-
-      // Case C: Dragging across empty canvas (MolDraw 2-atom bond creation)
-      if (info.atomIndex === null && (activeToolModeRef.current === 'addAtom' || activeToolModeRef.current === 'drawBond')) {
-        if (dist > 12) {
-          const rect = el.getBoundingClientRect();
-          setDragState({
-            sourceAtomIndex: -1,
-            startX: info.startX - rect.left,
-            startY: info.startY - rect.top,
-            currentX: clientX - rect.left,
-            currentY: clientY - rect.top,
-            targetAtomIndex: null,
-          });
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }
-    };
-
-    const handlePointerUp = (e: PointerEvent) => {
-      const info = pointerDownInfo.current;
-      pointerDownInfo.current = null;
-      setDragState(null);
-
-      try {
-        el.releasePointerCapture(e.pointerId);
-      } catch (_) {}
-
-      if (!info) return;
-
-      const clientX = e.clientX;
-      const clientY = e.clientY;
-      const dist = Math.hypot(clientX - info.startX, clientY - info.startY);
-
-      // 1. DRAG ACTIONS (dist > 10)
-      if (dist > 10) {
-        // A: Dragged from an existing atom
-        if (info.atomIndex !== null && activeToolModeRef.current !== 'moveAtom') {
-          const hoveredAtom = getAtomAtScreen(clientX, clientY);
-
-          // Released over another atom -> Connect them!
-          if (hoveredAtom !== null && hoveredAtom !== info.atomIndex) {
-            if (onBondDragConnectRef.current) {
-              onBondDragConnectRef.current(info.atomIndex, hoveredAtom);
-            }
-          } else {
-            // Released in empty space -> Sprout new atom at exact release position!
-            const coords = get3DCoordsFromScreen(clientX, clientY);
-            if (onBondDragSproutRef.current) {
-              onBondDragSproutRef.current(info.atomIndex, coords);
-            }
-          }
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-
-        // B: Dragged across empty canvas -> Create 2 connected atoms (MolDraw signature bond drag)
-        if (info.atomIndex === null && (activeToolModeRef.current === 'addAtom' || activeToolModeRef.current === 'drawBond')) {
-          const startCoords = get3DCoordsFromScreen(info.startX, info.startY);
-          const endCoords = get3DCoordsFromScreen(clientX, clientY);
-          if (onCanvasDragBondRef.current) {
-            onCanvasDragBondRef.current(startCoords, endCoords);
-          }
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-      }
-
-      // 2. CLICK ACTIONS (dist <= 10)
-      // A: Clicked on an Atom
-      if (info.atomIndex !== null) {
-        if (onAtomSelectRef.current) {
-          onAtomSelectRef.current(info.atomIndex);
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-
-      // B: Clicked on Empty Canvas (or on a bond)
-      if (info.atomIndex === null && !info.isPanning) {
-        // Check if clicked near a bond line
-        let clickedBondId: string | null = null;
-        const viewer = viewerRef.current;
-        if (viewer && bondsRef.current && bondsRef.current.length > 0 && typeof viewer.modelToScreen === 'function') {
-          const currentAtoms = atomsRef.current;
-          for (const b of bondsRef.current) {
-            const a1 = currentAtoms.find((a) => a.id === b.from);
-            const a2 = currentAtoms.find((a) => a.id === b.to);
-            if (!a1 || !a2) continue;
-            try {
-              const s1 = viewer.modelToScreen({ x: a1.x, y: a1.y, z: a1.z });
-              const s2 = viewer.modelToScreen({ x: a2.x, y: a2.y, z: a2.z });
-              if (s1 && s2) {
-                const px = clientX + window.pageXOffset;
-                const py = clientY + window.pageYOffset;
-                const d = distToSegment({ x: px, y: py }, s1, s2);
-                if (d <= 14) {
-                  clickedBondId = b.id;
-                  break;
-                }
-              }
-            } catch (_) {}
-          }
-        }
-
-        if (clickedBondId !== null && onBondClickRef.current) {
-          onBondClickRef.current(clickedBondId);
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-
-        // Otherwise, place atom on empty canvas at exact coordinates!
-        const coords = get3DCoordsFromScreen(clientX, clientY);
-        if (onCanvasEmptyClickRef.current) {
-          onCanvasEmptyClickRef.current(coords);
-        }
-      }
-    };
-
-    const handleContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-    };
-
-    el.addEventListener('pointerdown', handlePointerDown, { capture: true });
-    el.addEventListener('pointermove', handlePointerMove, { capture: true });
-    el.addEventListener('pointerup', handlePointerUp, { capture: true });
-    el.addEventListener('pointercancel', handlePointerUp, { capture: true });
-    el.addEventListener('contextmenu', handleContextMenu);
+    });
+    ro.observe(el);
 
     return () => {
-      el.removeEventListener('pointerdown', handlePointerDown, { capture: true });
-      el.removeEventListener('pointermove', handlePointerMove, { capture: true });
-      el.removeEventListener('pointerup', handlePointerUp, { capture: true });
-      el.removeEventListener('pointercancel', handlePointerUp, { capture: true });
-      el.removeEventListener('contextmenu', handleContextMenu);
+      ro.disconnect();
     };
-  }, [get3DCoordsFromScreen, getAtomAtScreen]);
+  }, []);
 
   // Initialize or re-render 3Dmol Scene
   useEffect(() => {
@@ -598,10 +148,10 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
     if (!viewerRef.current) {
       const viewer = $3Dmol.createViewer(containerRef.current, {
         defaultcolors: $3Dmol.rasmolElementColors,
-        backgroundColor: backgroundColor || '#050505',
+        backgroundColor: backgroundColor || '#000000',
       });
 
-      // 8px Click Tolerance Fix
+      // 8px Click Tolerance Fix to distinguish quick clicks from rotation drags
       viewer.closeEnoughForClick = function (t: any) {
         const r = this.getX(t);
         const s = this.getY(t);
@@ -617,7 +167,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
     const viewer = viewerRef.current;
     viewer.clear();
     if (viewer.setBackgroundColor) {
-      viewer.setBackgroundColor(backgroundColor || '#050505');
+      viewer.setBackgroundColor(backgroundColor || '#000000');
     }
 
     const modelContent = rawMolfile || rawXyz;
@@ -802,7 +352,11 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
     orbitalIsoval, 
     orbitalOpacity, 
     homoLobes, 
-    lumoLobes
+    lumoLobes,
+    backgroundColor,
+    compoundName,
+    formula,
+    isBuilderMode
   ]);
 
   // Recenter Camera Handler
@@ -810,16 +364,6 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
     soundEngine.playTap();
     if (viewerRef.current) {
       viewerRef.current.zoomTo(300);
-      viewerRef.current.render();
-    }
-  };
-
-  // Nudge / Move Molecule in 3D Space (Canvas D-Pad)
-  const handleNudge = (dx: number, dy: number) => {
-    soundEngine.playTap();
-    if (viewerRef.current && viewerRef.current.modelGroup) {
-      viewerRef.current.modelGroup.position.x += dx;
-      viewerRef.current.modelGroup.position.y += dy;
       viewerRef.current.render();
     }
   };
@@ -834,13 +378,6 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
       viewerRef.current.spin('y', 1.2);
     } else {
       viewerRef.current.spin(false);
-    }
-  };
-
-  const handleZoom = (factor: number) => {
-    if (viewerRef.current) {
-      viewerRef.current.zoom(factor, 200);
-      viewerRef.current.render();
     }
   };
 
@@ -861,124 +398,34 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
     }
   };
 
-  const toggleFullscreen = () => {
-    soundEngine.playTap();
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(() => {});
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen().catch(() => {});
-      setIsFullscreen(false);
-    }
-  };
-
   return (
     <div 
-      className={`relative w-full h-full min-h-[460px] rounded-2xl overflow-hidden border-2 border-slate-200/90 bg-[#F7F8FA] shadow-sm flex flex-col ${
-        isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''
-      }`}
+      className="relative w-full h-full min-h-[460px] overflow-hidden bg-[#000000] flex flex-col"
     >
       {/* 3Dmol WebGL Canvas Mount Container */}
       <div 
         ref={containerRef} 
-        className={`w-full h-full flex-1 ${
-          activeToolMode === 'addAtom' || activeToolMode === 'drawBond'
-            ? 'cursor-crosshair'
-            : activeToolMode === 'moveAtom'
-            ? 'cursor-move'
-            : activeToolMode === 'replaceElement'
-            ? 'cursor-copy'
-            : activeToolMode === 'erase'
-            ? 'cursor-pointer'
-            : navigationMode === 'pan'
-            ? 'cursor-move active:cursor-move'
-            : 'cursor-grab active:cursor-grabbing'
-        }`}
+        className="w-full h-full flex-1 cursor-grab active:cursor-grabbing select-none"
         style={{ position: 'relative' }}
       />
 
-      {/* Live Interactive Bond Dragging SVG Overlay */}
-      {dragState && (
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-30">
-          <line
-            x1={dragState.startX}
-            y1={dragState.startY}
-            x2={dragState.currentX}
-            y2={dragState.currentY}
-            stroke={dragState.targetAtomIndex !== null ? '#10B981' : '#00C2D1'}
-            strokeWidth={3}
-            strokeDasharray={dragState.targetAtomIndex !== null ? undefined : '5,5'}
-            strokeLinecap="round"
-          />
-          {/* Ghost atom at drag start if dragging across empty canvas */}
-          {dragState.sourceAtomIndex === -1 && (
-            <g>
-              <circle
-                cx={dragState.startX}
-                cy={dragState.startY}
-                r={16}
-                fill="#00C2D1"
-                fillOpacity={0.9}
-                stroke="#ffffff"
-                strokeWidth={2}
-              />
-              <text
-                x={dragState.startX}
-                y={dragState.startY + 4}
-                textAnchor="middle"
-                fill="#ffffff"
-                fontSize={11}
-                fontFamily="Montserrat, sans-serif"
-                fontWeight="bold"
-              >
-                {activeElementSymbol || 'C'}
-              </text>
-            </g>
-          )}
-          {/* Ghost atom following cursor */}
-          <circle
-            cx={dragState.currentX}
-            cy={dragState.currentY}
-            r={16}
-            fill={dragState.targetAtomIndex !== null ? '#10B981' : '#00C2D1'}
-            fillOpacity={0.9}
-            stroke="#ffffff"
-            strokeWidth={2}
-          />
-          <text
-            x={dragState.currentX}
-            y={dragState.currentY + 4}
-            textAnchor="middle"
-            fill="#ffffff"
-            fontSize={11}
-            fontFamily="Montserrat, sans-serif"
-            fontWeight="bold"
-          >
-            {dragState.targetAtomIndex !== null
-              ? 'Join'
-              : activeElementSymbol || 'C'}
-          </text>
-        </svg>
-      )}
-
       {/* Top-Left Floating Info HUD */}
       {(compoundName || formula) && (
-        <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/95 backdrop-blur-sm border-2 border-slate-200 shadow-md">
+        <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/80 shadow-md">
           <div className="w-2.5 h-2.5 rounded-full bg-[#00C2D1] animate-pulse" />
-          <div className="flex items-center gap-1.5 font-montserrat font-extrabold text-xs text-[#0B1F2A]">
+          <div className="flex items-center gap-1.5 font-montserrat font-extrabold text-xs text-white">
             <span>{compoundName}</span>
             {formula && <span className="font-mono font-bold text-[#00C2D1] text-[11px]">({formula})</span>}
           </div>
           {orbitalType !== 'NONE' && (
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[#008E9B]">
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-teal-900/60 border border-teal-500/50 text-[#00C2D1]">
               {orbitalType} Active
             </span>
           )}
         </div>
       )}
 
-      {/* Top-Right MolView 3D Viewport Toolbar matching Screenshot 1 */}
+      {/* Top-Right 3D Viewport Toolbar */}
       <div className="absolute top-3 right-3 z-20 flex items-center gap-1 p-1 rounded-xl bg-slate-900/85 backdrop-blur-md border border-slate-700 shadow-xl text-white">
         {/* 1. Sync from 2D button */}
         {onSyncFrom2D && (
