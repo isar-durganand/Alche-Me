@@ -12,6 +12,7 @@ import { WorldSchema } from './domain/types/curriculum';
 export const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<NavRoute>('hub');
   const [selectedWorld, setSelectedWorld] = useState<WorldSchema | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   const handleSelectWorld = (world: WorldSchema) => {
     setSelectedWorld(world);
@@ -43,7 +44,13 @@ export const App: React.FC = () => {
       case 'periodic-table':
         return <PeriodicTableScreen />;
       case 'molecule-studio':
-        return <MoleculeStudioScreen onNavigate={handleNavigate} />;
+        return (
+          <MoleculeStudioScreen 
+            onNavigate={handleNavigate} 
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          />
+        );
       case 'virtual-lab':
         return <VirtualLabScreen />;
       case 'settings':
@@ -54,7 +61,12 @@ export const App: React.FC = () => {
   };
 
   return (
-    <AppShell currentRoute={currentRoute} onRouteChange={handleNavigate}>
+    <AppShell 
+      currentRoute={currentRoute} 
+      onRouteChange={handleNavigate}
+      sidebarOpen={sidebarOpen}
+      onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+    >
       {renderScreen()}
     </AppShell>
   );

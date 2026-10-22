@@ -640,8 +640,8 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         case 'ballAndStick':
         default:
           viewer.setStyle({}, {
-            stick: { radius: 0.16, colorscheme: 'Jmol', singleBonds: false },
-            sphere: { scale: 0.34, colorscheme: 'Jmol' },
+            stick: { radius: 0.14, colorscheme: 'Jmol', singleBonds: false },
+            sphere: { scale: 0.28, colorscheme: 'Jmol' },
           });
           break;
       }

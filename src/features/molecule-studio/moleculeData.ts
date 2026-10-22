@@ -895,82 +895,84 @@ H  -4.6000  -3.1500   0.0000`,
     description: 'Iconic polycyclic aromatic hydrocarbon (PAH) composed of three fused benzene rings in an angular arrangement. Classic benchmark for 2D/3D chemical drawing engines.',
     provenance: 'NIST Chemistry WebBook / MolView Benchmark',
     raw_xyz: `24
-Phenanthrene C14H10
-C   -1.210   2.420   0.000
-C    0.000   3.120   0.000
-C    1.210   2.420   0.000
-C    1.210   1.020   0.000
-C    0.000   0.320   0.000
-C   -1.210   1.020   0.000
-C    2.420   0.320   0.000
-C    2.420  -1.080   0.000
-C    1.210  -1.780   0.000
-C    0.000  -1.080   0.000
-C   -1.210  -1.780   0.000
-C   -2.420  -1.080   0.000
-C   -2.420   0.320   0.000
-C    0.000  -3.180   0.000
-H   -2.140   2.960   0.000
-H    0.000   4.200   0.000
-H    2.140   2.960   0.000
-H    3.350   0.860   0.000
-H    3.350  -1.620   0.000
-H    2.140  -2.320   0.000
-H   -1.210  -2.860   0.000
-H   -3.350  -1.620   0.000
-H   -3.350   0.860   0.000
-H    0.000  -4.260   0.000`,
+Phenanthrene C14H10 (NIST / PubChem CID 995)
+C   -0.7199   -0.3930    0.0000
+C    0.7199   -0.3930    0.0000
+C   -1.4123    0.8461    0.0000
+C    1.4123    0.8461    0.0000
+C   -0.6957    2.0453    0.0000
+C    0.6954    2.0453    0.0000
+C   -1.5154   -1.5662    0.0000
+C    1.5154   -1.5661    0.0000
+C   -2.8173    0.8802    0.0000
+C    2.8173    0.8802    0.0000
+C   -2.9121   -1.5182    0.0000
+C    2.9122   -1.5181    0.0000
+C   -3.5631   -0.2943    0.0000
+C    3.5633   -0.2943    0.0000
+H   -1.2140    3.0024    0.0000
+H    1.2138    3.0025    0.0000
+H   -1.0604   -2.5534    0.0000
+H    1.0605   -2.5533    0.0000
+H   -3.3475    1.8309    0.0000
+H    3.3474    1.8310    0.0000
+H   -3.4858   -2.4405    0.0000
+H    3.4858   -2.4404    0.0000
+H   -4.6480   -0.2517    0.0000
+H    4.6481   -0.2517    0.0000`,
     atoms: [
-      { id: 'pt-0', index: 0, symbol: 'C', x: -1.21, y: 2.42, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-1', index: 1, symbol: 'C', x: 0.00, y: 3.12, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-2', index: 2, symbol: 'C', x: 1.21, y: 2.42, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-3', index: 3, symbol: 'C', x: 1.21, y: 1.02, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-4', index: 4, symbol: 'C', x: 0.00, y: 0.32, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-5', index: 5, symbol: 'C', x: -1.21, y: 1.02, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-6', index: 6, symbol: 'C', x: 2.42, y: 0.32, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-7', index: 7, symbol: 'C', x: 2.42, y: -1.08, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-8', index: 8, symbol: 'C', x: 1.21, y: -1.78, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-9', index: 9, symbol: 'C', x: 0.00, y: -1.08, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-10', index: 10, symbol: 'C', x: -1.21, y: -1.78, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-11', index: 11, symbol: 'C', x: -2.42, y: -1.08, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-12', index: 12, symbol: 'C', x: -2.42, y: 0.32, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-13', index: 13, symbol: 'C', x: 1.21, y: -3.18, z: 0.0, hybridization: 'sp²' },
-      { id: 'pt-14', index: 14, symbol: 'H', x: -2.14, y: 2.96, z: 0.0 },
-      { id: 'pt-15', index: 15, symbol: 'H', x: 0.00, y: 4.20, z: 0.0 },
-      { id: 'pt-16', index: 16, symbol: 'H', x: 2.14, y: 2.96, z: 0.0 },
-      { id: 'pt-17', index: 17, symbol: 'H', x: 3.35, y: 0.86, z: 0.0 },
-      { id: 'pt-18', index: 18, symbol: 'H', x: 3.35, y: -1.62, z: 0.0 },
-      { id: 'pt-19', index: 19, symbol: 'H', x: -1.21, y: -2.86, z: 0.0 },
-      { id: 'pt-20', index: 20, symbol: 'H', x: -3.35, y: -1.62, z: 0.0 },
-      { id: 'pt-21', index: 21, symbol: 'H', x: -3.35, y: 0.86, z: 0.0 },
-      { id: 'pt-22', index: 22, symbol: 'H', x: 2.14, y: -3.72, z: 0.0 },
-      { id: 'pt-23', index: 23, symbol: 'H', x: 0.28, y: -3.72, z: 0.0 },
+      { id: 'pt-0', index: 0, symbol: 'C', x: -0.7199, y: -0.3930, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-1', index: 1, symbol: 'C', x: 0.7199, y: -0.3930, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-2', index: 2, symbol: 'C', x: -1.4123, y: 0.8461, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-3', index: 3, symbol: 'C', x: 1.4123, y: 0.8461, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-4', index: 4, symbol: 'C', x: -0.6957, y: 2.0453, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-5', index: 5, symbol: 'C', x: 0.6954, y: 2.0453, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-6', index: 6, symbol: 'C', x: -1.5154, y: -1.5662, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-7', index: 7, symbol: 'C', x: 1.5154, y: -1.5661, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-8', index: 8, symbol: 'C', x: -2.8173, y: 0.8802, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-9', index: 9, symbol: 'C', x: 2.8173, y: 0.8802, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-10', index: 10, symbol: 'C', x: -2.9121, y: -1.5182, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-11', index: 11, symbol: 'C', x: 2.9122, y: -1.5181, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-12', index: 12, symbol: 'C', x: -3.5631, y: -0.2943, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-13', index: 13, symbol: 'C', x: 3.5633, y: -0.2943, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-14', index: 14, symbol: 'H', x: -1.2140, y: 3.0024, z: 0.0 },
+      { id: 'pt-15', index: 15, symbol: 'H', x: 1.2138, y: 3.0025, z: 0.0 },
+      { id: 'pt-16', index: 16, symbol: 'H', x: -1.0604, y: -2.5534, z: 0.0 },
+      { id: 'pt-17', index: 17, symbol: 'H', x: 1.0605, y: -2.5533, z: 0.0 },
+      { id: 'pt-18', index: 18, symbol: 'H', x: -3.3475, y: 1.8309, z: 0.0 },
+      { id: 'pt-19', index: 19, symbol: 'H', x: 3.3474, y: 1.8310, z: 0.0 },
+      { id: 'pt-20', index: 20, symbol: 'H', x: -3.4858, y: -2.4405, z: 0.0 },
+      { id: 'pt-21', index: 21, symbol: 'H', x: 3.4858, y: -2.4404, z: 0.0 },
+      { id: 'pt-22', index: 22, symbol: 'H', x: -4.6480, y: -0.2517, z: 0.0 },
+      { id: 'pt-23', index: 23, symbol: 'H', x: 4.6481, y: -0.2517, z: 0.0 },
     ],
     bonds: [
-      { id: 'ptb-1', from: 0, to: 1, order: 2 },
-      { id: 'ptb-2', from: 1, to: 2, order: 1 },
-      { id: 'ptb-3', from: 2, to: 3, order: 2 },
-      { id: 'ptb-4', from: 3, to: 4, order: 1 },
-      { id: 'ptb-5', from: 4, to: 5, order: 2 },
-      { id: 'ptb-6', from: 5, to: 0, order: 1 },
-      { id: 'ptb-7', from: 3, to: 6, order: 1 },
-      { id: 'ptb-8', from: 6, to: 7, order: 2 },
-      { id: 'ptb-9', from: 7, to: 8, order: 1 },
-      { id: 'ptb-10', from: 8, to: 9, order: 2 },
-      { id: 'ptb-11', from: 9, to: 4, order: 1 },
-      { id: 'ptb-12', from: 9, to: 10, order: 1 },
-      { id: 'ptb-13', from: 10, to: 11, order: 2 },
-      { id: 'ptb-14', from: 11, to: 12, order: 1 },
-      { id: 'ptb-15', from: 12, to: 5, order: 1 },
-      { id: 'ptb-16', from: 8, to: 13, order: 1 },
-      { id: 'ptb-17', from: 0, to: 14, order: 1 },
-      { id: 'ptb-18', from: 1, to: 15, order: 1 },
-      { id: 'ptb-19', from: 2, to: 16, order: 1 },
-      { id: 'ptb-20', from: 6, to: 17, order: 1 },
-      { id: 'ptb-21', from: 7, to: 18, order: 1 },
-      { id: 'ptb-22', from: 10, to: 19, order: 1 },
-      { id: 'ptb-23', from: 11, to: 20, order: 1 },
-      { id: 'ptb-24', from: 12, to: 21, order: 1 },
+      { id: 'ptb-1', from: 0, to: 1, order: 1 },
+      { id: 'ptb-2', from: 0, to: 2, order: 1 },
+      { id: 'ptb-3', from: 0, to: 6, order: 2 },
+      { id: 'ptb-4', from: 1, to: 3, order: 1 },
+      { id: 'ptb-5', from: 1, to: 7, order: 2 },
+      { id: 'ptb-6', from: 2, to: 4, order: 1 },
+      { id: 'ptb-7', from: 2, to: 8, order: 2 },
+      { id: 'ptb-8', from: 3, to: 5, order: 1 },
+      { id: 'ptb-9', from: 3, to: 9, order: 2 },
+      { id: 'ptb-10', from: 4, to: 5, order: 2 },
+      { id: 'ptb-11', from: 4, to: 14, order: 1 },
+      { id: 'ptb-12', from: 5, to: 15, order: 1 },
+      { id: 'ptb-13', from: 6, to: 10, order: 1 },
+      { id: 'ptb-14', from: 6, to: 16, order: 1 },
+      { id: 'ptb-15', from: 7, to: 11, order: 1 },
+      { id: 'ptb-16', from: 7, to: 17, order: 1 },
+      { id: 'ptb-17', from: 8, to: 12, order: 1 },
+      { id: 'ptb-18', from: 8, to: 18, order: 1 },
+      { id: 'ptb-19', from: 9, to: 13, order: 1 },
+      { id: 'ptb-20', from: 9, to: 19, order: 1 },
+      { id: 'ptb-21', from: 10, to: 12, order: 2 },
+      { id: 'ptb-22', from: 10, to: 20, order: 1 },
+      { id: 'ptb-23', from: 11, to: 13, order: 2 },
+      { id: 'ptb-24', from: 11, to: 21, order: 1 },
+      { id: 'ptb-25', from: 12, to: 22, order: 1 },
+      { id: 'ptb-26', from: 13, to: 23, order: 1 },
     ],
     orbitals_summary: {
       homo_ev: -8.03,

@@ -17,7 +17,9 @@ import {
   User, 
   Award,
   Zap,
-  HelpCircle
+  HelpCircle,
+  PanelLeft,
+  PanelLeftClose
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -32,13 +34,21 @@ export interface AppShellProps {
   currentRoute: NavRoute;
   onRouteChange: (route: NavRoute) => void;
   children: React.ReactNode;
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export const AppShell: React.FC<AppShellProps> = ({
   currentRoute,
   onRouteChange,
   children,
+  sidebarOpen,
+  onToggleSidebar,
 }) => {
+  const [internalSidebarOpen, setInternalSidebarOpen] = useState(true);
+  const isSidebarVisible = sidebarOpen !== undefined ? sidebarOpen : internalSidebarOpen;
+  const toggleSidebar = onToggleSidebar || (() => setInternalSidebarOpen(!internalSidebarOpen));
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -105,17 +115,8 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   const activeItem = navItems.find((n) => n.id === currentRoute);
 
-  // Dedicated Full-Screen Workbench Layout for MolView Molecule Studio
-  if (currentRoute === 'molecule-studio') {
-    return (
-      <div className="w-screen h-screen overflow-hidden bg-white select-none flex flex-col">
-        {children}
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#F7F8FA] text-[#0B1F2A] flex flex-col font-sans select-none relative">
+    <div className="min-h-screen h-screen bg-[#F7F8FA] text-[#0B1F2A] flex flex-col font-sans select-none relative overflow-hidden">
       {/* Skip to Content for Keyboard Accessibility */}
       <a
         href="#main-content"
@@ -125,32 +126,45 @@ export const AppShell: React.FC<AppShellProps> = ({
       </a>
 
       {/* Main Layout Grid */}
-      <div className="flex-1 flex flex-col md:flex-row">
-        {/* Desktop Sidebar (Permanent) */}
-        <aside
-          aria-label="Desktop Navigation"
-          className="hidden md:flex flex-col w-64 border-r-2 border-slate-200/90 bg-white shrink-0 z-20 shadow-[2px_0_12px_rgba(11,31,42,0.03)]"
-        >
-          {/* Logo & Brand Header */}
-          <div className="h-20 flex items-center gap-3 px-5 border-b-2 border-slate-100 bg-white">
-            <div className="relative group cursor-pointer" onClick={() => handleNavClick('hub')}>
-              <img
-                src="/assets/branding/Alche-Me Logo.png"
-                alt="Alche-Me Logo"
-                className="w-11 h-11 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
-              />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-montserrat font-extrabold text-lg tracking-tight text-[#0B1F2A] leading-tight">
-                ALCHE-ME
-              </span>
-              <span className="text-[10px] font-montserrat font-bold uppercase tracking-wider text-[#00C2D1]">
-                Chemistry Adventure
-              </span>
-            </div>
-          </div>
+      <div className="flex-1 flex flex-col md:flex-row w-full h-full overflow-hidden">
+        {/* Desktop Sidebar (Collapsible) */}
+        {isSidebarVisible && (
+          <aside
+            aria-label="Desktop Navigation"
+            className="hidden md:flex flex-col w-64 border-r-2 border-slate-200/90 bg-white shrink-0 z-20 shadow-[2px_0_12px_rgba(11,31,42,0.03)]"
+          >
+            {/* Logo & Brand Header */}
+            <div className="h-20 flex items-center justify-between px-5 border-b-2 border-slate-100 bg-white">
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavClick('hub')}>
+                <div className="relative group">
+                  <img
+                    src="/assets/branding/Alche-Me Logo.png"
+                    alt="Alche-Me Logo"
+                    className="w-11 h-11 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-montserrat font-extrabold text-lg tracking-tight text-[#0B1F2A] leading-tight">
+                    ALCHE-ME
+                  </span>
+                  <span className="text-[10px] font-montserrat font-bold uppercase tracking-wider text-[#00C2D1]">
+                    Chemistry Adventure
+                  </span>
+                </div>
+              </div>
 
-          {/* Nav Links */}
+              {/* Sidebar Collapse Button */}
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                title="Collapse navigation sidebar"
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Nav Links */}
           <nav aria-label="Main Navigation" className="p-3 space-y-1.5 flex-1">
             <div className="px-3 py-2 text-[10px] font-montserrat font-extrabold uppercase tracking-wider text-slate-400">
               Game Navigation
@@ -225,31 +239,44 @@ export const AppShell: React.FC<AppShellProps> = ({
             </button>
           </div>
         </aside>
+        )}
 
-        {/* Mobile / Tablet Top Header & Game HUD */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-20 border-b-2 border-slate-200/90 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-[0_2px_10px_rgba(11,31,42,0.03)]">
-            {/* Mobile Hamburger + Title */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-xl text-slate-600 hover:text-[#0B1F2A] hover:bg-slate-100 cursor-pointer"
-                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
+        {/* Main Operational Viewport */}
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+          {currentRoute !== 'molecule-studio' && (
+            <header className="h-20 border-b-2 border-slate-200/90 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-[0_2px_10px_rgba(11,31,42,0.03)]">
+              {/* Mobile Hamburger + Title + Sidebar Toggle */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="md:hidden p-2 rounded-xl text-slate-600 hover:text-[#0B1F2A] hover:bg-slate-100 cursor-pointer"
+                  aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                >
+                  {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
 
-              <div className="flex items-center gap-2 text-xs">
-                <span className="font-montserrat font-extrabold text-base text-[#0B1F2A] hidden sm:inline">
-                  Alche-Me
-                </span>
-                <ChevronRight className="w-4 h-4 text-slate-300 hidden sm:inline" />
-                <span className="font-montserrat font-bold text-sm text-[#00C2D1]">
-                  {activeItem?.label}
-                </span>
+                {!isSidebarVisible && (
+                  <button
+                    type="button"
+                    onClick={toggleSidebar}
+                    className="hidden md:flex p-2 rounded-xl text-slate-600 hover:text-[#0B1F2A] hover:bg-slate-100 cursor-pointer"
+                    title="Open navigation sidebar"
+                  >
+                    <PanelLeft className="w-5 h-5 text-teal-600" />
+                  </button>
+                )}
+
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="font-montserrat font-extrabold text-base text-[#0B1F2A] hidden sm:inline">
+                    Alche-Me
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-slate-300 hidden sm:inline" />
+                  <span className="font-montserrat font-bold text-sm text-[#00C2D1]">
+                    {activeItem?.label}
+                  </span>
+                </div>
               </div>
-            </div>
 
             {/* Gamified HUD Top Bar Elements */}
             <div className="flex items-center gap-2 sm:gap-3">
@@ -297,6 +324,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               </Button>
             </div>
           </header>
+          )}
 
           {/* Mobile Drawer (When Open) */}
           {mobileMenuOpen && (
@@ -344,7 +372,11 @@ export const AppShell: React.FC<AppShellProps> = ({
           <main 
             id="main-content" 
             tabIndex={-1} 
-            className="flex-1 w-full focus:outline-none p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto pb-24 md:pb-8"
+            className={`flex-1 w-full focus:outline-none ${
+              currentRoute === 'molecule-studio' 
+                ? 'p-0 m-0 h-full flex flex-col overflow-hidden max-w-none' 
+                : 'p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto pb-24 md:pb-8 overflow-y-auto'
+            }`}
           >
             {children}
           </main>
@@ -352,10 +384,11 @@ export const AppShell: React.FC<AppShellProps> = ({
       </div>
 
       {/* Mobile Bottom Thumb Navigation Bar */}
-      <nav
-        aria-label="Mobile Quick Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t-2 border-slate-200 px-4 flex items-center justify-around z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]"
-      >
+      {currentRoute !== 'molecule-studio' && (
+        <nav
+          aria-label="Mobile Quick Navigation"
+          className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t-2 border-slate-200 px-4 flex items-center justify-around z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]"
+        >
         {navItems.map((item) => {
           const isActive = item.id === currentRoute;
           return (
@@ -377,6 +410,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           );
         })}
       </nav>
+      )}
 
       {/* Profile & Achievements Modal */}
       {showProfileModal && (

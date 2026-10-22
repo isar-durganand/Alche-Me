@@ -27,7 +27,8 @@ import {
   Grid,
   FileText,
   HelpCircle,
-  X
+  X,
+  PanelLeft
 } from 'lucide-react';
 import { ChemicalSketcher2D } from './ChemicalSketcher2D';
 import { MoleculeViewer3D } from './MoleculeViewer3D';
@@ -40,13 +41,20 @@ import { AtomNode, BondEdge, DisplayStyle, MeasurementMode, MeasurementResult, S
 import { soundEngine } from '../../infrastructure/audio/soundEngine';
 import { progressAdapter } from '../../infrastructure/persistence/progressAdapter';
 import { relaxVseprForces, calculateHillFormula, autoSaturateHydrogens, stripAllHydrogens } from './vseprPhysics';
+import { exportToMolfile } from './smilesEngine';
 import { NavRoute } from '../../components/layout/AppShell';
 
 interface MoleculeStudioScreenProps {
   onNavigate?: (route: NavRoute) => void;
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }
 
-export const MoleculeStudioScreen: React.FC<MoleculeStudioScreenProps> = ({ onNavigate }) => {
+export const MoleculeStudioScreen: React.FC<MoleculeStudioScreenProps> = ({ 
+  onNavigate,
+  sidebarOpen = true,
+  onToggleSidebar
+}) => {
   // 1. Core Molecular State (2D Sketcher & 3D WebGL)
   const [atoms2D, setAtoms2D] = useState<Atom2D[]>([]);
   const [bonds2D, setBonds2D] = useState<Bond2D[]>([]);
@@ -94,7 +102,8 @@ export const MoleculeStudioScreen: React.FC<MoleculeStudioScreenProps> = ({ onNa
       return;
     }
 
-    const res = convert2DTo3D(current2DAtoms, current2DBonds, false);
+    // Always auto-saturate with hydrogens for the 3D model, exactly like MolView standard
+    const res = convert2DTo3D(current2DAtoms, current2DBonds, true);
     setAtoms3D(res.atoms);
     setBonds3D(res.bonds);
     setRawMolfile(res.rawMolfile);
@@ -158,9 +167,9 @@ export const MoleculeStudioScreen: React.FC<MoleculeStudioScreenProps> = ({ onNa
     setAtoms2D(res2D.atoms);
     setBonds2D(res2D.bonds);
 
-    // Generate V2000 molfile
-    const res3D = convert2DTo3D(res2D.atoms, res2D.bonds, false);
-    setRawMolfile(res3D.rawMolfile);
+    // Generate V2000 molfile directly from the target complete structure (WITH ALL HYDROGENS!)
+    const targetMolfile = exportToMolfile(target.atoms, target.bonds);
+    setRawMolfile(targetMolfile);
 
     setSearchDropdownOpen(false);
     setSearchQuery('');
@@ -281,19 +290,38 @@ export const MoleculeStudioScreen: React.FC<MoleculeStudioScreenProps> = ({ onNa
   return (
     <div className="w-full h-full flex flex-col bg-[#F3F4F6] text-slate-900 select-none overflow-hidden">
       {/* ========================================================================= */}
-      {/* 1. TOP MOLVIEW HEADER BAR matching Screenshot 1                           */}
+      {/* 1. TOP ALCHE-ME STUDIO HEADER BAR                                         */}
       {/* ========================================================================= */}
-      <header className="h-12 border-b border-slate-300 bg-white px-3 sm:px-4 flex items-center justify-between shrink-0 shadow-xs z-30">
-        {/* Left: MolView Logo + Menu Bar */}
-        <div className="flex items-center gap-3">
-          {/* Logo matching MolView */}
-          <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => loadMoleculePreset('phenanthrene')}>
-            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 via-sky-400 to-teal-300 flex items-center justify-center shadow-xs">
-              <Atom className="w-4 h-4 text-white" />
+      <header className="h-12 border-b border-slate-300 bg-white px-2 sm:px-3 flex items-center justify-between shrink-0 shadow-xs z-30">
+        {/* Left: Sidebar Toggle + Alche-Me Brand + Menus */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Sidebar Toggle Button */}
+          {onToggleSidebar && (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              title={sidebarOpen ? "Collapse Navigation Sidebar" : "Expand Navigation Sidebar"}
+              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer mr-0.5"
+            >
+              <PanelLeft className="w-4 h-4 text-slate-700" />
+            </button>
+          )}
+
+          {/* Genuine Alche-Me Brand Header */}
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => loadMoleculePreset('phenanthrene')}>
+            <img
+              src="/assets/branding/Alche-Me Logo.png"
+              alt="Alche-Me Logo"
+              className="w-7 h-7 object-contain drop-shadow-xs"
+            />
+            <div className="flex flex-col leading-none">
+              <span className="font-montserrat font-extrabold text-sm tracking-tight text-[#0B1F2A]">
+                ALCHE-ME
+              </span>
+              <span className="text-[9px] font-montserrat font-bold uppercase tracking-wider text-[#00C2D1]">
+                Molecule Studio
+              </span>
             </div>
-            <span className="font-montserrat font-extrabold text-base tracking-tight text-slate-800">
-              MolView
-            </span>
           </div>
 
           {/* Menus Dropdown Triggers */}
