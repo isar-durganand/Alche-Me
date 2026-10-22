@@ -8,7 +8,7 @@
  * - Automated hydrogen saturation
  */
 
-import { AtomNode, BondEdge, ELEMENT_REGISTRY, ElementSymbol, ValidationFeedback } from './types';
+import { AtomNode, BondEdge, ELEMENT_REGISTRY, ElementSymbol, ValidationFeedback, getElementData } from './types';
 
 // ==========================================
 // VECTOR & GEOMETRIC CALCULATIONS
@@ -44,6 +44,57 @@ export function calculateAngle(
   // Clamp to [-1, 1] to avoid float precision NaN in acos
   cosTheta = Math.max(-1, Math.min(1, cosTheta));
   return (Math.acos(cosTheta) * 180) / Math.PI;
+}
+
+export interface AngleDetails {
+  angle: number; // in degrees
+  bisector: { x: number; y: number; z: number };
+  labelPosition: { x: number; y: number; z: number };
+}
+
+export function calculateAngleDetails(
+  p1: { x: number; y: number; z: number },
+  center: { x: number; y: number; z: number },
+  p2: { x: number; y: number; z: number },
+  offsetDist: number = 0.65
+): AngleDetails {
+  const angle = calculateAngle(p1, center, p2);
+
+  const v1 = { x: p1.x - center.x, y: p1.y - center.y, z: p1.z - center.z };
+  const v2 = { x: p2.x - center.x, y: p2.y - center.y, z: p2.z - center.z };
+
+  const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z) || 1;
+  const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z) || 1;
+
+  const u1 = { x: v1.x / mag1, y: v1.y / mag1, z: v1.z / mag1 };
+  const u2 = { x: v2.x / mag2, y: v2.y / mag2, z: v2.z / mag2 };
+
+  let bx = u1.x + u2.x;
+  let by = u1.y + u2.y;
+  let bz = u1.z + u2.z;
+  let bmag = Math.sqrt(bx * bx + by * by + bz * bz);
+
+  // If collinear (e.g. 180° in CO2), bisector is normal
+  if (bmag < 1e-4) {
+    if (Math.abs(u1.x) < 0.9) {
+      bx = 1; by = 0; bz = 0;
+    } else {
+      bx = 0; by = 1; bz = 0;
+    }
+    bmag = 1;
+  }
+
+  const normB = { x: bx / bmag, y: by / bmag, z: bz / bmag };
+
+  return {
+    angle,
+    bisector: normB,
+    labelPosition: {
+      x: center.x + normB.x * offsetDist,
+      y: center.y + normB.y * offsetDist,
+      z: center.z + normB.z * offsetDist,
+    },
+  };
 }
 
 export function calculateDihedral(
@@ -91,6 +142,41 @@ export function convertAtomsToRawXyz(atoms: { symbol: string; x: number; y: numb
     ...atoms.map((a) => `${a.symbol.padEnd(3)} ${a.x.toFixed(4).padStart(9)} ${a.y.toFixed(4).padStart(9)} ${a.z.toFixed(4).padStart(9)}`)
   ];
   return lines.join('\n');
+}
+
+/**
+ * Automatically perceive and generate chemical bonds based on covalent radii distance
+ */
+export function autoDetectBonds(atoms: AtomNode[]): BondEdge[] {
+  const bonds: BondEdge[] = [];
+  for (let i = 0; i < atoms.length; i++) {
+    for (let j = i + 1; j < atoms.length; j++) {
+      const a1 = atoms[i];
+      const a2 = atoms[j];
+      const el1 = getElementData(a1.symbol);
+      const el2 = getElementData(a2.symbol);
+      const dist = calculateDistance(a1, a2);
+      const maxDist = (el1.covalentRadius + el2.covalentRadius) * 1.30;
+      const minDist = 0.50;
+
+      if (dist >= minDist && dist <= maxDist) {
+        let order: 1 | 2 | 3 = 1;
+        if (a1.symbol !== 'H' && a2.symbol !== 'H') {
+          const tripleCutoff = (el1.covalentRadius + el2.covalentRadius) * 0.85;
+          const doubleCutoff = (el1.covalentRadius + el2.covalentRadius) * 0.95;
+          if (dist < tripleCutoff) order = 3;
+          else if (dist < doubleCutoff) order = 2;
+        }
+        bonds.push({
+          id: `bond-auto-${i}-${j}-${Date.now()}`,
+          from: a1.id,
+          to: a2.id,
+          order,
+        });
+      }
+    }
+  }
+  return bonds;
 }
 
 // ==========================================
@@ -142,7 +228,7 @@ export function calculateHillFormula(atoms: { symbol: string }[]): string {
 export function calculateMolarMass(atoms: { symbol: string }[]): number {
   let mass = 0;
   for (const a of atoms) {
-    const el = ELEMENT_REGISTRY[a.symbol];
+    const el = getElementData(a.symbol);
     if (el) mass += el.atomicMass;
   }
   return Math.round(mass * 1000) / 1000;
@@ -161,7 +247,7 @@ export function validateMoleculeValence(
 
   // Initialize map
   for (const a of atoms) {
-    const el = ELEMENT_REGISTRY[a.symbol] || ELEMENT_REGISTRY['C'];
+    const el = getElementData(a.symbol);
     atomValenceMap[a.id] = {
       current: 0,
       max: el.maxValence,
@@ -182,7 +268,7 @@ export function validateMoleculeValence(
   let isValid = true;
 
   for (const a of atoms) {
-    const el = ELEMENT_REGISTRY[a.symbol] || ELEMENT_REGISTRY['C'];
+    const el = getElementData(a.symbol);
     const info = atomValenceMap[a.id];
     const allowed = el.valences;
 
@@ -266,7 +352,7 @@ export function autoSaturateHydrogens(
 
   for (const host of atoms) {
     if (host.symbol === 'H') continue;
-    const el = ELEMENT_REGISTRY[host.symbol];
+    const el = getElementData(host.symbol);
     if (!el) continue;
 
     const neededValence = el.valences[0] - (currentBondMap[host.id] || 0);
@@ -284,7 +370,7 @@ export function autoSaturateHydrogens(
       }
     }
 
-    const cDist = (el.covalentRadius + ELEMENT_REGISTRY.H.covalentRadius) * 1.15; // ~1.09 Å
+    const cDist = (el.covalentRadius + getElementData('H').covalentRadius) * 1.15; // ~1.09 Å
 
     // Generate vectors pointing away from existing neighbors
     const directions: { x: number; y: number; z: number }[] = [];
@@ -435,8 +521,8 @@ export function relaxVseprForces(
       const dz = p2.z - p1.z;
       const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) || 0.01;
 
-      const el1 = ELEMENT_REGISTRY[p1.symbol] || ELEMENT_REGISTRY['C'];
-      const el2 = ELEMENT_REGISTRY[p2.symbol] || ELEMENT_REGISTRY['C'];
+      const el1 = getElementData(p1.symbol);
+      const el2 = getElementData(p2.symbol);
       // Target equilibrium bond length based on bond order
       const factor = bond.order === 3 ? 0.82 : bond.order === 2 ? 0.90 : 1.0;
       const targetDist = (el1.covalentRadius + el2.covalentRadius) * factor * 1.35;

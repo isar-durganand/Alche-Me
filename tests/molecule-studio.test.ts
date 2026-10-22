@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { 
   calculateDistance, 
   calculateAngle, 
+  calculateAngleDetails,
   calculateHillFormula, 
   calculateMolarMass, 
   validateMoleculeValence, 
@@ -11,8 +12,9 @@ import {
 } from '../src/features/molecule-studio/vseprPhysics';
 import { FRAGMENT_TEMPLATES, insertFragment } from '../src/features/molecule-studio/fragmentTemplates';
 import { parseSmiles, generateSmiles, parseXyz, exportToXyz, exportToMolfile } from '../src/features/molecule-studio/smilesEngine';
+import { MOLECULE_CHALLENGES, validateChallengeCompletion } from '../src/features/molecule-studio/moleculeChallenges';
 import { CURATED_MOLECULES } from '../src/features/molecule-studio/moleculeData';
-import { AtomNode, BondEdge, ELEMENT_REGISTRY } from '../src/features/molecule-studio/types';
+import { AtomNode, BondEdge, ELEMENT_REGISTRY, getElementData } from '../src/features/molecule-studio/types';
 
 describe('Alche-Me — 3D Molecule Studio & VSEPR Physics Engine', () => {
   it('should accurately calculate Euclidean distances in 3D Ångströms', () => {
@@ -228,5 +230,111 @@ describe('Alche-Me — 3D Molecule Studio & VSEPR Physics Engine', () => {
         expect(isNaN(a.z)).toBe(false);
       }
     }
+  });
+
+  it('should calculate angle details and bisector vectors for on-canvas label placement', () => {
+    const a1 = { x: 0.0, y: 0.7572, z: -0.4692 };
+    const center = { x: 0.0, y: 0.0, z: 0.1173 };
+    const a2 = { x: 0.0, y: -0.7572, z: -0.4692 };
+
+    const details = calculateAngleDetails(a1, center, a2, 0.75);
+    expect(details.angle).toBeCloseTo(104.5, 1);
+    expect(isNaN(details.bisector.x)).toBe(false);
+    expect(isNaN(details.bisector.y)).toBe(false);
+    expect(isNaN(details.bisector.z)).toBe(false);
+    expect(isNaN(details.labelPosition.x)).toBe(false);
+    expect(isNaN(details.labelPosition.y)).toBe(false);
+    expect(isNaN(details.labelPosition.z)).toBe(false);
+  });
+
+  it('should dynamically resolve any of the 118 periodic table elements', () => {
+    // Standard common elements
+    const c = getElementData('C');
+    expect(c.symbol).toBe('C');
+    expect(c.atomicNumber).toBe(6);
+
+    // Precious metal Gold (Au, Z=79)
+    const au = getElementData('Au');
+    expect(au.symbol).toBe('Au');
+    expect(au.atomicNumber).toBe(79);
+    expect(au.covalentRadius).toBeGreaterThan(1.0);
+
+    // Actinide Uranium (U, Z=92)
+    const u = getElementData('U');
+    expect(u.symbol).toBe('U');
+    expect(u.atomicNumber).toBe(92);
+
+    // Superheavy element Oganesson (Og, Z=118)
+    const og = getElementData('Og');
+    expect(og.symbol).toBe('Og');
+    expect(og.atomicNumber).toBe(118);
+  });
+
+  it('should validate curriculum challenge completion for game levels', () => {
+    expect(MOLECULE_CHALLENGES.length).toBeGreaterThanOrEqual(6);
+    const waterChallenge = MOLECULE_CHALLENGES.find((c) => c.id === 'challenge-water')!;
+    expect(waterChallenge).toBeDefined();
+
+    const studentWaterAtoms: AtomNode[] = [
+      { id: 'o', index: 0, symbol: 'O', x: 0.0, y: 0.0, z: 0.1173 },
+      { id: 'h1', index: 1, symbol: 'H', x: 0.0, y: 0.7572, z: -0.4692 },
+      { id: 'h2', index: 2, symbol: 'H', x: 0.0, y: -0.7572, z: -0.4692 },
+    ];
+    const studentWaterBonds: BondEdge[] = [
+      { id: 'b1', from: 'o', to: 'h1', order: 1 },
+      { id: 'b2', from: 'o', to: 'h2', order: 1 },
+    ];
+
+    // Case 1: Incomplete (No angle measurement yet)
+    const incompleteRes = validateChallengeCompletion(
+      studentWaterAtoms,
+      studentWaterBonds,
+      [],
+      waterChallenge
+    );
+    expect(incompleteRes.isFormulaMatch).toBe(true);
+    expect(incompleteRes.isAngleMeasured).toBe(false);
+    expect(incompleteRes.isComplete).toBe(false);
+
+    // Case 2: Complete with valid measured angle (104.5°)
+    const completeRes = validateChallengeCompletion(
+      studentWaterAtoms,
+      studentWaterBonds,
+      [
+        {
+          id: 'm1',
+          type: 'angle',
+          atomIndices: [1, 0, 2],
+          atomSymbols: ['H', 'O', 'H'],
+          value: 104.5,
+          unit: '°',
+          label: 'H1—O1—H2',
+        },
+      ],
+      waterChallenge
+    );
+    expect(completeRes.isFormulaMatch).toBe(true);
+    expect(completeRes.isAngleMeasured).toBe(true);
+    expect(completeRes.isComplete).toBe(true);
+
+    // Case 3: CO2 challenge requiring double bonds
+    const co2Challenge = MOLECULE_CHALLENGES.find((c) => c.id === 'challenge-co2')!;
+    const singleBondedCO2: BondEdge[] = [
+      { id: 'b1', from: 'c', to: 'o1', order: 1 }, // single bond instead of double!
+      { id: 'b2', from: 'c', to: 'o2', order: 1 },
+    ];
+    const co2Atoms: AtomNode[] = [
+      { id: 'c', index: 0, symbol: 'C', x: 0, y: 0, z: 0 },
+      { id: 'o1', index: 1, symbol: 'O', x: -1.16, y: 0, z: 0 },
+      { id: 'o2', index: 2, symbol: 'O', x: 1.16, y: 0, z: 0 },
+    ];
+    const co2FailRes = validateChallengeCompletion(
+      co2Atoms,
+      singleBondedCO2,
+      [{ id: 'm1', type: 'angle', atomIndices: [1, 0, 2], atomSymbols: ['O', 'C', 'O'], value: 180, unit: '°', label: 'Angle' }],
+      co2Challenge
+    );
+    expect(co2FailRes.isBondsMatch).toBe(false);
+    expect(co2FailRes.isComplete).toBe(false);
   });
 });

@@ -7,7 +7,7 @@
  * - MDL Molfile (V2000) Exporter
  */
 
-import { AtomNode, BondEdge, ELEMENT_REGISTRY, ElementSymbol } from './types';
+import { AtomNode, BondEdge, ELEMENT_REGISTRY, ElementSymbol, getElementData } from './types';
 import { relaxVseprForces, autoSaturateHydrogens } from './vseprPhysics';
 
 // ==========================================
@@ -122,7 +122,7 @@ export function parseSmiles(smilesInput: string): { atoms: AtomNode[]; bonds: Bo
         const newAtom: AtomNode = {
           id: newId,
           index: atomCounter,
-          symbol: ELEMENT_REGISTRY[sym] ? sym : 'C',
+          symbol: getElementData(sym).symbol,
           x: Math.round(Math.cos(theta) * radius * 1000) / 1000,
           y: Math.round(Math.sin(theta) * radius * 1000) / 1000,
           z: Math.round(z * 1000) / 1000,
@@ -370,8 +370,8 @@ export function parseXyz(xyzText: string): { atoms: AtomNode[]; bonds: BondEdge[
     for (let j = i + 1; j < atoms.length; j++) {
       const a1 = atoms[i];
       const a2 = atoms[j];
-      const el1 = ELEMENT_REGISTRY[a1.symbol] || ELEMENT_REGISTRY['C'];
-      const el2 = ELEMENT_REGISTRY[a2.symbol] || ELEMENT_REGISTRY['C'];
+      const el1 = getElementData(a1.symbol);
+      const el2 = getElementData(a2.symbol);
 
       const dx = a1.x - a2.x;
       const dy = a1.y - a2.y;
@@ -433,7 +433,7 @@ export function exportToMolfile(atoms: AtomNode[], bonds: BondEdge[], name: stri
     name,
     '  Alche-Me 3D Studio    V2000',
     'Standard IUPAC molecular structure',
-    // Counts line: aaabbblllfffcccsssxxxrrrpppiiimmmvvvvvv
+    // Counts line: aaabbblllfffcccsssxxxrrrpppiiimmmvvvvvv (39 chars, ends with V2000)
     `${pad(atoms.length, 3)}${pad(bonds.length, 3)}  0  0  0  0  0  0  0  0999 V2000`,
   ];
 
@@ -444,15 +444,36 @@ export function exportToMolfile(atoms: AtomNode[], bonds: BondEdge[], name: stri
     const x = pad(a.x.toFixed(4), 10);
     const y = pad(a.y.toFixed(4), 10);
     const z = pad(a.z.toFixed(4), 10);
-    const sym = pad(a.symbol, 3, true);
-    lines.push(`${x}${y}${z} ${sym} 0  0  0  0  0  0  0  0  0  0  0  0`);
+    const sym = a.symbol.length === 1 ? a.symbol.toUpperCase() : a.symbol.charAt(0).toUpperCase() + a.symbol.slice(1).toLowerCase();
+    const symPadded = pad(sym, 3, true);
+    lines.push(`${x}${y}${z} ${symPadded} 0  0  0  0  0  0  0  0  0  0  0  0`);
   });
 
   // Bond block: 111222ttt ...
   bonds.forEach((b) => {
-    const fromIdx = atomIdIndexMap.get(b.from as string) || 1;
-    const toIdx = atomIdIndexMap.get(b.to as string) || 2;
-    lines.push(`${pad(fromIdx, 3)}${pad(toIdx, 3)}${pad(b.order, 3)}  0  0  0  0`);
+    let fromIdx: number | undefined;
+    let toIdx: number | undefined;
+
+    if (typeof b.from === 'number') {
+      fromIdx = b.from + 1;
+    } else if (atomIdIndexMap.has(b.from)) {
+      fromIdx = atomIdIndexMap.get(b.from);
+    } else {
+      const p = parseInt(b.from, 10);
+      fromIdx = !isNaN(p) && p >= 0 && p < atoms.length ? p + 1 : 1;
+    }
+
+    if (typeof b.to === 'number') {
+      toIdx = b.to + 1;
+    } else if (atomIdIndexMap.has(b.to)) {
+      toIdx = atomIdIndexMap.get(b.to);
+    } else {
+      const p = parseInt(b.to, 10);
+      toIdx = !isNaN(p) && p >= 0 && p < atoms.length ? p + 1 : 2;
+    }
+
+    const order = Math.min(3, Math.max(1, b.order || 1));
+    lines.push(`${pad(fromIdx || 1, 3)}${pad(toIdx || 2, 3)}${pad(order, 3)}  0  0  0  0`);
   });
 
   lines.push('M  END');
