@@ -13,7 +13,6 @@ import { soundEngine } from '../../infrastructure/audio/soundEngine';
 import { BohrAtomVisualizer } from './BohrAtomVisualizer';
 import { FlameTestViewer } from './FlameTestViewer';
 import { OrbitalBoxesViewer } from './OrbitalBoxesViewer';
-import { RealisticMoleculeViewer3D } from '../../components/3d/RealisticMoleculeViewer3D';
 import { Button, Input, Modal, Badge, MarkdownRenderer } from '../../components/ui';
 
 type HeatmapMode = 'category' | 'electronegativity' | 'ionization_energy' | 'state_of_matter';
@@ -596,11 +595,6 @@ export const PeriodicTableScreen: React.FC = () => {
                   {selectedElement.ionization_energy ? `${selectedElement.ionization_energy} kJ/mol` : 'N/A'}
                 </span>
               </div>
-            </div>
-
-            {/* 3D Molecular Geometry Studio */}
-            <div className="rounded-3xl border-2 border-slate-100 overflow-hidden shadow-xs">
-              <RealisticMoleculeViewer3D />
             </div>
 
             {/* Subshell Hund's Rule Box Filling Diagram */}
