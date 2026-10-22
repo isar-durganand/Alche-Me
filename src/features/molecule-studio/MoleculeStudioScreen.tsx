@@ -19,6 +19,7 @@ import {
   Wand2, 
   Focus, 
   RotateCw, 
+  RotateCcw,
   CheckCircle2, 
   AlertTriangle, 
   Plus, 
@@ -37,6 +38,7 @@ import {
   Grid, 
   Link, 
   Unlink, 
+  Move,
   ChevronDown, 
   ChevronUp,
   Trophy,
@@ -216,6 +218,39 @@ export const MoleculeStudioScreen: React.FC = () => {
     setTimeout(() => setIoNotification(null), 3500);
   };
 
+  // History Undo / Redo Stacks
+  const [history, setHistory] = useState<{ atoms: AtomNode[]; bonds: BondEdge[] }[]>([]);
+  const [redoStack, setRedoStack] = useState<{ atoms: AtomNode[]; bonds: BondEdge[] }[]>([]);
+
+  const commitBuilderChange = (newAtoms: AtomNode[], newBonds: BondEdge[]) => {
+    setHistory((prev) => [...prev.slice(-30), { atoms: builderAtoms, bonds: builderBonds }]);
+    setRedoStack([]);
+    setBuilderAtoms(newAtoms);
+    setBuilderBonds(newBonds);
+  };
+
+  const handleUndo = () => {
+    if (history.length === 0) return;
+    soundEngine.playTap();
+    const prev = history[history.length - 1];
+    setRedoStack((r) => [...r, { atoms: builderAtoms, bonds: builderBonds }]);
+    setHistory((h) => h.slice(0, -1));
+    setBuilderAtoms(prev.atoms);
+    setBuilderBonds(prev.bonds);
+    triggerIoNotification('Undo');
+  };
+
+  const handleRedo = () => {
+    if (redoStack.length === 0) return;
+    soundEngine.playTap();
+    const next = redoStack[redoStack.length - 1];
+    setHistory((h) => [...h, { atoms: builderAtoms, bonds: builderBonds }]);
+    setRedoStack((r) => r.slice(0, -1));
+    setBuilderAtoms(next.atoms);
+    setBuilderBonds(next.bonds);
+    triggerIoNotification('Redo');
+  };
+
   // ==========================================
   // ATOM CLICK & TOOL INTERACTION LOGIC
   // ==========================================
@@ -234,7 +269,7 @@ export const MoleculeStudioScreen: React.FC = () => {
         handleReplaceElement(atomIndex);
       } else if (builderToolMode === 'erase') {
         handleEraseAtom(atomIndex);
-      } else if (builderToolMode === 'select') {
+      } else if (builderToolMode === 'select' || builderToolMode === 'moveAtom') {
         soundEngine.playTap();
         setSelectedBuilderAtomIndex(selectedBuilderAtomIndex === atomIndex ? null : atomIndex);
       }
@@ -244,16 +279,168 @@ export const MoleculeStudioScreen: React.FC = () => {
     }
   };
 
-  // Empty canvas click handler: adds a free atom or clears selection
-  const handleCanvasEmptyClick = () => {
+  // Empty canvas click handler: adds a free atom at exact click coordinates
+  const handleCanvasEmptyClick = (coords?: { x: number; y: number; z: number }) => {
     if (isBuilderActive) {
-      if (builderToolMode === 'addAtom') {
-        handleAddFreeAtom();
+      if (builderToolMode === 'addAtom' || builderToolMode === 'drawBond' || builderToolMode === 'select') {
+        const newIdx = builderAtoms.length;
+        const targetX = coords ? coords.x : (builderAtoms.length > 0 ? builderAtoms[builderAtoms.length - 1].x + 1.5 : 0);
+        const targetY = coords ? coords.y : 0;
+        const targetZ = coords ? coords.z : 0;
+
+        soundEngine.playElementPip(getElementData(builderSelectedElement).atomicNumber);
+        const newAtom: AtomNode = {
+          id: `b-click-${Date.now()}-${newIdx}`,
+          index: newIdx,
+          symbol: builderSelectedElement,
+          x: targetX,
+          y: targetY,
+          z: targetZ,
+        };
+        commitBuilderChange([...builderAtoms, newAtom], builderBonds);
+        setSelectedBuilderAtomIndex(newIdx);
+        triggerIoNotification(`Placed ${builderSelectedElement} at (${targetX.toFixed(1)}, ${targetY.toFixed(1)})`);
       } else {
         setSelectedBuilderAtomIndex(null);
         setBondFirstAtomIndex(null);
       }
     }
+  };
+
+  // Drag-and-Drop Bond Connect between two existing atoms
+  const handleBondDragConnect = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx) return;
+    const a1 = builderAtoms[fromIdx];
+    const a2 = builderAtoms[toIdx];
+    if (!a1 || !a2) return;
+
+    soundEngine.playTap();
+    const existingIndex = builderBonds.findIndex(
+      (b) => (b.from === a1.id && b.to === a2.id) || (b.from === a2.id && b.to === a1.id)
+    );
+
+    let nextBonds = [...builderBonds];
+    if (existingIndex !== -1) {
+      const curOrder = nextBonds[existingIndex].order;
+      const nextOrder = (curOrder === 1 ? 2 : curOrder === 2 ? 3 : 1) as 1 | 2 | 3;
+      nextBonds[existingIndex] = { ...nextBonds[existingIndex], order: nextOrder };
+      triggerIoNotification(`Bond order toggled to ${nextOrder === 3 ? 'Triple (≡)' : nextOrder === 2 ? 'Double (=)' : 'Single (—)'}`);
+    } else {
+      nextBonds.push({
+        id: `bond-drag-${Date.now()}-${builderBonds.length}`,
+        from: a1.id,
+        to: a2.id,
+        order: builderBondOrder,
+      });
+      triggerIoNotification(`Connected ${a1.symbol}${fromIdx + 1}—${a2.symbol}${toIdx + 1}`);
+    }
+
+    commitBuilderChange(builderAtoms, nextBonds);
+  };
+
+  // Drag-to-Sprout into empty space at exact release coordinates
+  const handleBondDragSprout = (fromIdx: number, toCoords: { x: number; y: number; z: number }) => {
+    const host = builderAtoms[fromIdx];
+    if (!host) return;
+
+    soundEngine.playElementPip(getElementData(builderSelectedElement).atomicNumber);
+    const newIdx = builderAtoms.length;
+    const newAtomId = `b-sprout-${Date.now()}-${newIdx}`;
+    const newAtom: AtomNode = {
+      id: newAtomId,
+      index: newIdx,
+      symbol: builderSelectedElement,
+      x: toCoords.x,
+      y: toCoords.y,
+      z: toCoords.z,
+    };
+
+    const newBond: BondEdge = {
+      id: `bond-sprout-${Date.now()}-${builderBonds.length}`,
+      from: host.id,
+      to: newAtomId,
+      order: builderBondOrder,
+    };
+
+    const nextAtoms = [...builderAtoms, newAtom];
+    const nextBonds = [...builderBonds, newBond];
+    commitBuilderChange(nextAtoms, nextBonds);
+    setSelectedBuilderAtomIndex(newIdx);
+    triggerIoNotification(`Sprouted ${builderSelectedElement} bonded to Atom #${fromIdx + 1}`);
+  };
+
+  // Drag across empty canvas (draw bond between 2 new atoms)
+  const handleCanvasDragBond = (
+    startCoords: { x: number; y: number; z: number },
+    endCoords: { x: number; y: number; z: number }
+  ) => {
+    soundEngine.playElementPip(getElementData(builderSelectedElement).atomicNumber);
+    const idx1 = builderAtoms.length;
+    const idx2 = builderAtoms.length + 1;
+
+    const atom1: AtomNode = {
+      id: `b-drag-${Date.now()}-${idx1}`,
+      index: idx1,
+      symbol: builderSelectedElement,
+      x: startCoords.x,
+      y: startCoords.y,
+      z: startCoords.z,
+    };
+
+    const atom2: AtomNode = {
+      id: `b-drag-${Date.now()}-${idx2}`,
+      index: idx2,
+      symbol: builderSelectedElement,
+      x: endCoords.x,
+      y: endCoords.y,
+      z: endCoords.z,
+    };
+
+    const newBond: BondEdge = {
+      id: `bond-canvas-${Date.now()}`,
+      from: atom1.id,
+      to: atom2.id,
+      order: builderBondOrder,
+    };
+
+    commitBuilderChange([...builderAtoms, atom1, atom2], [...builderBonds, newBond]);
+    setSelectedBuilderAtomIndex(idx2);
+    triggerIoNotification(`Drew ${builderSelectedElement}—${builderSelectedElement} bond`);
+  };
+
+  // Direct click on a bond line on canvas (cycles order or erases)
+  const handleBondClick = (bondId: string) => {
+    soundEngine.playTap();
+    const bondIdx = builderBonds.findIndex((b) => b.id === bondId);
+    if (bondIdx === -1) return;
+
+    if (builderToolMode === 'erase') {
+      const nextBonds = builderBonds.filter((b) => b.id !== bondId);
+      commitBuilderChange(builderAtoms, nextBonds);
+      triggerIoNotification(`Erased bond`);
+      return;
+    }
+
+    const curOrder = builderBonds[bondIdx].order;
+    const nextOrder = (curOrder === 1 ? 2 : curOrder === 2 ? 3 : 1) as 1 | 2 | 3;
+    const nextBonds = [...builderBonds];
+    nextBonds[bondIdx] = { ...nextBonds[bondIdx], order: nextOrder };
+    commitBuilderChange(builderAtoms, nextBonds);
+    triggerIoNotification(
+      `Bond order toggled to ${nextOrder === 3 ? 'Triple (≡)' : nextOrder === 2 ? 'Double (=)' : 'Single (—)'}`
+    );
+  };
+
+  // Drag-to-move individual atom in 3D space
+  const handleAtomDragMove = (atomIdx: number, newCoords: { x: number; y: number; z: number }) => {
+    if (!builderAtoms[atomIdx]) return;
+    const updated = builderAtoms.map((a, idx) => {
+      if (idx === atomIdx) {
+        return { ...a, x: newCoords.x, y: newCoords.y, z: newCoords.z };
+      }
+      return a;
+    });
+    setBuilderAtoms(updated);
   };
 
   const handleMeasurementPick = (atomIndex: number) => {
@@ -405,29 +592,36 @@ export const MoleculeStudioScreen: React.FC = () => {
     const updatedA = [...builderAtoms, newAtom];
     const updatedB = [...builderBonds, newBond];
     const relaxed = relaxVseprForces(updatedA, updatedB, 30);
-    setBuilderAtoms(relaxed);
-    setBuilderBonds(updatedB);
+    commitBuilderChange(relaxed, updatedB);
     setSelectedBuilderAtomIndex(newIdx);
     triggerIoNotification(`Added ${builderSelectedElement} bonded to Atom #${hostIndex + 1}`);
   };
 
   // Add Free Floating Atom
-  const handleAddFreeAtom = () => {
+  const handleAddFreeAtom = (coords?: { x: number; y: number; z: number }) => {
     soundEngine.playTap();
     const newIdx = builderAtoms.length;
-    let maxX = 0;
-    for (const a of builderAtoms) {
-      if (a.x > maxX) maxX = a.x;
+    let targetX = 0, targetY = 0, targetZ = 0;
+    if (coords) {
+      targetX = coords.x;
+      targetY = coords.y;
+      targetZ = coords.z;
+    } else {
+      let maxX = 0;
+      for (const a of builderAtoms) {
+        if (a.x > maxX) maxX = a.x;
+      }
+      targetX = Math.round((maxX + 1.8) * 1000) / 1000;
     }
     const newAtom: AtomNode = {
       id: `b-free-${Date.now()}-${newIdx}`,
       index: newIdx,
       symbol: builderSelectedElement,
-      x: Math.round((maxX + 2.0) * 1000) / 1000,
-      y: Math.round((Math.random() - 0.5) * 1.5 * 1000) / 1000,
-      z: Math.round((Math.random() - 0.5) * 1.5 * 1000) / 1000,
+      x: targetX,
+      y: targetY,
+      z: targetZ,
     };
-    setBuilderAtoms([...builderAtoms, newAtom]);
+    commitBuilderChange([...builderAtoms, newAtom], builderBonds);
     setSelectedBuilderAtomIndex(newIdx);
     triggerIoNotification(`Added free ${builderSelectedElement} atom`);
   };
@@ -466,8 +660,7 @@ export const MoleculeStudioScreen: React.FC = () => {
     }
 
     const relaxed = relaxVseprForces(builderAtoms, nextBonds, 30);
-    setBuilderAtoms(relaxed);
-    setBuilderBonds(nextBonds);
+    commitBuilderChange(relaxed, nextBonds);
   };
 
   // 2. Interactive Canvas Click Bond Tool (Atom 1 -> Atom 2)
@@ -519,8 +712,7 @@ export const MoleculeStudioScreen: React.FC = () => {
     }
 
     const relaxed = relaxVseprForces(builderAtoms, nextBonds, 30);
-    setBuilderAtoms(relaxed);
-    setBuilderBonds(nextBonds);
+    commitBuilderChange(relaxed, nextBonds);
     setBondFirstAtomIndex(null);
   };
 
@@ -528,9 +720,8 @@ export const MoleculeStudioScreen: React.FC = () => {
   const handleAutoDetectBonds = () => {
     soundEngine.playFlameWhoosh();
     const detected = autoDetectBonds(builderAtoms);
-    setBuilderBonds(detected);
     const relaxed = relaxVseprForces(builderAtoms, detected, 40);
-    setBuilderAtoms(relaxed);
+    commitBuilderChange(relaxed, detected);
     soundEngine.playSuccess();
     triggerIoNotification(`Auto-detected ${detected.length} bonds from 3D geometry!`);
   };
@@ -539,7 +730,7 @@ export const MoleculeStudioScreen: React.FC = () => {
   const handleDeleteBond = (bondId: string) => {
     soundEngine.playTap();
     const nextBonds = builderBonds.filter((b) => b.id !== bondId);
-    setBuilderBonds(nextBonds);
+    commitBuilderChange(builderAtoms, nextBonds);
     triggerIoNotification(`Deleted bond`);
   };
 
@@ -554,7 +745,7 @@ export const MoleculeStudioScreen: React.FC = () => {
       }
       return a;
     });
-    setBuilderAtoms(updated);
+    commitBuilderChange(updated, builderBonds);
     triggerIoNotification(`Atom #${atomIndex + 1} changed to ${builderSelectedElement}`);
   };
 
@@ -572,11 +763,9 @@ export const MoleculeStudioScreen: React.FC = () => {
     );
 
     if (filteredAtoms.length === 0) {
-      setBuilderAtoms([{ id: 'b-0', index: 0, symbol: 'C', x: 0, y: 0, z: 0 }]);
-      setBuilderBonds([]);
+      commitBuilderChange([{ id: 'b-0', index: 0, symbol: 'C', x: 0, y: 0, z: 0 }], []);
     } else {
-      setBuilderAtoms(filteredAtoms);
-      setBuilderBonds(filteredBonds);
+      commitBuilderChange(filteredAtoms, filteredBonds);
     }
     setSelectedBuilderAtomIndex(null);
     triggerIoNotification(`Erased atom and its bonds`);
@@ -594,8 +783,7 @@ export const MoleculeStudioScreen: React.FC = () => {
       selectedBuilderAtomIndex ?? undefined
     );
     const relaxed = relaxVseprForces(res.newAtoms, res.newBonds, 45);
-    setBuilderAtoms(relaxed);
-    setBuilderBonds(res.newBonds);
+    commitBuilderChange(relaxed, res.newBonds);
     setSelectedBuilderAtomIndex(null);
     triggerIoNotification(`Inserted ${template.name}`);
   };
@@ -604,8 +792,7 @@ export const MoleculeStudioScreen: React.FC = () => {
     soundEngine.playFlameWhoosh();
     const res = autoSaturateHydrogens(builderAtoms, builderBonds);
     const relaxed = relaxVseprForces(res.updatedAtoms, res.updatedBonds, 50);
-    setBuilderAtoms(relaxed);
-    setBuilderBonds(res.updatedBonds);
+    commitBuilderChange(relaxed, res.updatedBonds);
     soundEngine.playSuccess();
     triggerIoNotification(`Valences saturated (+${res.addedCount} Hydrogens)`);
   };
@@ -614,23 +801,21 @@ export const MoleculeStudioScreen: React.FC = () => {
     soundEngine.playTap();
     const res = stripAllHydrogens(builderAtoms, builderBonds);
     const relaxed = relaxVseprForces(res.updatedAtoms, res.updatedBonds, 30);
-    setBuilderAtoms(relaxed);
-    setBuilderBonds(res.updatedBonds);
+    commitBuilderChange(relaxed, res.updatedBonds);
     triggerIoNotification(`Stripped ${res.removedCount} Hydrogens (Skeletal framework)`);
   };
 
   const handleClean3D = () => {
     soundEngine.playFlameWhoosh();
     const relaxed = relaxVseprForces(builderAtoms, builderBonds, 80);
-    setBuilderAtoms(relaxed);
+    commitBuilderChange(relaxed, builderBonds);
     soundEngine.playSuccess();
     triggerIoNotification(`VSEPR Force-Field Minimized (80 passes)`);
   };
 
   const handleClearBuilder = () => {
     soundEngine.playTap();
-    setBuilderAtoms([{ id: 'b-0', index: 0, symbol: 'C', x: 0, y: 0, z: 0 }]);
-    setBuilderBonds([]);
+    commitBuilderChange([{ id: 'b-0', index: 0, symbol: 'C', x: 0, y: 0, z: 0 }], []);
     setSelectedBuilderAtomIndex(0);
     setBondFirstAtomIndex(null);
     triggerIoNotification(`Canvas reset to single Carbon atom`);
@@ -848,6 +1033,7 @@ export const MoleculeStudioScreen: React.FC = () => {
             rawMolfile={currentRawMolfile}
             rawXyz={currentRawXyz}
             atoms={currentAtoms}
+            bonds={isBuilderActive ? builderBonds : activeCurated.bonds}
             displayStyle={displayStyle}
             onDisplayStyleChange={setDisplayStyle}
             surfaceStyle={surfaceStyle}
@@ -865,6 +1051,12 @@ export const MoleculeStudioScreen: React.FC = () => {
             }
             onAtomSelect={handleAtomSelect}
             onCanvasEmptyClick={handleCanvasEmptyClick}
+            onBondDragConnect={handleBondDragConnect}
+            onBondDragSprout={handleBondDragSprout}
+            onAtomDragMove={handleAtomDragMove}
+            onBondClick={handleBondClick}
+            onCanvasDragBond={handleCanvasDragBond}
+            isBuilderMode={isBuilderActive}
             showLabels={showLabels}
             onToggleLabels={() => setShowLabels(!showLabels)}
             orbitalType={orbitalType}
@@ -876,6 +1068,7 @@ export const MoleculeStudioScreen: React.FC = () => {
             formula={isBuilderActive ? builderValidation.formula : activeCurated.formula}
             compoundName={isBuilderActive ? 'Custom Molecule' : activeCurated.name}
             activeToolMode={isBuilderActive ? builderToolMode : undefined}
+            activeElementSymbol={builderSelectedElement}
           />
 
           {/* Builder Mode Floating Tool HUD Banner */}
@@ -1179,18 +1372,44 @@ export const MoleculeStudioScreen: React.FC = () => {
                   </button>
                 </div>
 
-                {/* 4. Canvas Drawing Tool Modes */}
+                {/* 4. Canvas Drawing Tool Modes & Undo / Redo */}
                 <div className="space-y-1.5">
-                  <span className="text-xs font-montserrat font-extrabold text-slate-700 block">
-                    Canvas Click Tool:
-                  </span>
-                  <div className="grid grid-cols-5 gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-montserrat font-extrabold text-slate-700 block">
+                      Canvas Tool Mode:
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={handleUndo}
+                        disabled={history.length === 0}
+                        className="p-1 px-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-[11px] font-montserrat font-bold flex items-center gap-1 cursor-pointer"
+                        title="Undo change (Ctrl+Z)"
+                      >
+                        <RotateCcw className="w-3 h-3 text-slate-600" />
+                        <span>Undo</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRedo}
+                        disabled={redoStack.length === 0}
+                        className="p-1 px-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-[11px] font-montserrat font-bold flex items-center gap-1 cursor-pointer"
+                        title="Redo change (Ctrl+Y)"
+                      >
+                        <RotateCw className="w-3 h-3 text-slate-600" />
+                        <span>Redo</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-6 gap-1">
                     {[
-                      { mode: 'addAtom', label: 'Sprout', icon: Plus, title: 'Click atom to sprout new bonded atom' },
-                      { mode: 'drawBond', label: 'Connect', icon: Share2, title: 'Click 1st atom then 2nd atom' },
-                      { mode: 'replaceElement', label: 'Mutate', icon: RefreshCw, title: 'Click atom to mutate element' },
+                      { mode: 'addAtom', label: 'Draw', icon: Plus, title: 'Click empty canvas to drop atom, or drag to sprout' },
+                      { mode: 'drawBond', label: 'Bond', icon: Share2, title: 'Drag from atom to atom to connect bond' },
+                      { mode: 'moveAtom', label: 'Move', icon: Move, title: 'Drag an atom to reposition in 3D' },
+                      { mode: 'replaceElement', label: 'Mutate', icon: RefreshCw, title: 'Click atom to mutate to active element' },
                       { mode: 'erase', label: 'Erase', icon: Trash2, title: 'Click atom to erase' },
-                      { mode: 'select', label: 'Inspect', icon: Focus, title: 'Click atom to select' },
+                      { mode: 'select', label: 'Pick', icon: Focus, title: 'Click atom to select or measure' },
                     ].map((t) => {
                       const Icon = t.icon;
                       const isSel = builderToolMode === t.mode;

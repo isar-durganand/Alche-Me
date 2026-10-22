@@ -201,7 +201,7 @@ export type DisplayStyle = 'ballAndStick' | 'spaceFilling' | 'licorice' | 'wiref
 export type SurfaceStyle = 'none' | 'vdw' | 'sas';
 export type MeasurementMode = 'distance' | 'angle' | 'dihedral' | 'none';
 export type OrbitalType = 'HOMO' | 'LUMO' | 'NONE';
-export type BuilderToolMode = 'addAtom' | 'drawBond' | 'replaceElement' | 'erase' | 'select';
+export type BuilderToolMode = 'addAtom' | 'drawBond' | 'replaceElement' | 'erase' | 'select' | 'moveAtom';
 
 export interface MeasurementResult {
   id: string;
