@@ -15,6 +15,7 @@ import { parseSmiles, generateSmiles, parseXyz, exportToXyz, exportToMolfile } f
 import { MOLECULE_CHALLENGES, validateChallengeCompletion } from '../src/features/molecule-studio/moleculeChallenges';
 import { CURATED_MOLECULES } from '../src/features/molecule-studio/moleculeData';
 import { AtomNode, BondEdge, ELEMENT_REGISTRY, getElementData } from '../src/features/molecule-studio/types';
+import { convert2DTo3D, convert3DTo2D } from '../src/features/molecule-studio/sketcher3dBridge';
 
 describe('Alche-Me — 3D Molecule Studio & VSEPR Physics Engine', () => {
   it('should accurately calculate Euclidean distances in 3D Ångströms', () => {
@@ -336,5 +337,34 @@ describe('Alche-Me — 3D Molecule Studio & VSEPR Physics Engine', () => {
     );
     expect(co2FailRes.isBondsMatch).toBe(false);
     expect(co2FailRes.isComplete).toBe(false);
+  });
+
+  it('should seamlessly convert 2D skeletal sketcher graph to 3D VSEPR structure', () => {
+    const atoms2D = [
+      { id: 'c1', symbol: 'C', x: 200, y: 200 },
+      { id: 'c2', symbol: 'C', x: 240, y: 200 },
+    ];
+    const bonds2D = [
+      { id: 'b1', from: 'c1', to: 'c2', order: 1 as const },
+    ];
+
+    const res3D = convert2DTo3D(atoms2D, bonds2D, true);
+    // Should auto-saturate with Hydrogens (Ethane C2H6)
+    expect(res3D.formula).toBe('C₂H₆');
+    expect(res3D.atoms.length).toBe(8); // 2 Carbons + 6 Hydrogens
+    expect(res3D.rawMolfile).toContain('M  END');
+
+    // Convert back from 3D to 2D
+    const res2D = convert3DTo2D(res3D.atoms, res3D.bonds);
+    // Heavy atoms preserved (C1 and C2)
+    expect(res2D.atoms.length).toBe(2);
+    expect(res2D.bonds.length).toBe(1);
+  });
+
+  it('should include Phenanthrene benchmark structure matching MolView standard', () => {
+    const phenanthrene = CURATED_MOLECULES.find((m) => m.id === 'phenanthrene');
+    expect(phenanthrene).toBeDefined();
+    expect(phenanthrene?.formula).toBe('C₁₄H₁₀');
+    expect(phenanthrene?.atoms.length).toBe(24);
   });
 });

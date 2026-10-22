@@ -194,6 +194,15 @@ export const progressAdapter = {
     return updatedRecord;
   },
 
+  addXp(amount: number): PlayerProfile {
+    const profile = this.getPlayerProfile();
+    profile.xp += amount;
+    profile.level = Math.floor(profile.xp / 100) + 1;
+    profile.updatedAt = new Date().toISOString();
+    this.savePlayerProfile(profile);
+    return profile;
+  },
+
   resetAllProgress(): void {
     try {
       safeRemoveItem(STORAGE_KEYS.PROFILE);

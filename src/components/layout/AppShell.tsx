@@ -332,7 +332,15 @@ export const AppShell: React.FC<AppShellProps> = ({
           )}
 
           {/* Main Content Workspace */}
-          <main id="main-content" tabIndex={-1} className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-24 md:pb-8 focus:outline-none">
+          <main 
+            id="main-content" 
+            tabIndex={-1} 
+            className={`flex-1 w-full focus:outline-none ${
+              currentRoute === 'molecule-studio' 
+                ? 'p-0 pb-16 md:pb-0 h-[calc(100vh-4rem)] flex flex-col overflow-hidden max-w-none' 
+                : 'p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto pb-24 md:pb-8'
+            }`}
+          >
             {children}
           </main>
         </div>

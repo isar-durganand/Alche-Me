@@ -44,7 +44,8 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Zap
 } from 'lucide-react';
 import { soundEngine } from '../../infrastructure/audio/soundEngine';
 
@@ -74,6 +75,9 @@ interface MoleculeViewer3DProps {
   onBondClick?: (bondId: string) => void;
   onCanvasDragBond?: (startCoords: { x: number; y: number; z: number }, endCoords: { x: number; y: number; z: number }) => void;
   isBuilderMode?: boolean;
+  backgroundColor?: string;
+  onSyncFrom2D?: () => void;
+  onClean3D?: () => void;
   showLabels: boolean;
   onToggleLabels: () => void;
   orbitalType: OrbitalType;
@@ -117,6 +121,9 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
   onBondClick,
   onCanvasDragBond,
   isBuilderMode = false,
+  backgroundColor = '#050505',
+  onSyncFrom2D,
+  onClean3D,
   showLabels,
   onToggleLabels,
   orbitalType,
@@ -591,7 +598,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
     if (!viewerRef.current) {
       const viewer = $3Dmol.createViewer(containerRef.current, {
         defaultcolors: $3Dmol.rasmolElementColors,
-        backgroundColor: '#F7F8FA', // Warm ivory white canvas
+        backgroundColor: backgroundColor || '#050505',
       });
 
       // 8px Click Tolerance Fix
@@ -609,6 +616,9 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
 
     const viewer = viewerRef.current;
     viewer.clear();
+    if (viewer.setBackgroundColor) {
+      viewer.setBackgroundColor(backgroundColor || '#050505');
+    }
 
     const modelContent = rawMolfile || rawXyz;
     const modelFormat = rawMolfile ? 'sdf' : 'xyz';
@@ -969,23 +979,90 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
       )}
 
       {/* Top-Right Quick Viewport Controls & Drag/Pan Switcher */}
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 p-1.5 rounded-xl bg-white/95 backdrop-blur-sm border-2 border-slate-200 shadow-md">
+      <div className="absolute top-2.5 right-3 z-20 flex items-center gap-1.5 p-1 rounded-xl bg-slate-900/90 backdrop-blur-md border border-slate-700/80 shadow-lg text-white">
+        {/* Sync from 2D button */}
+        {onSyncFrom2D && (
+          <button
+            type="button"
+            onClick={() => {
+              soundEngine.playTap();
+              onSyncFrom2D();
+            }}
+            title="Sync 2D Sketcher to 3D Viewport"
+            className="p-1.5 rounded-lg hover:bg-slate-800 text-sky-400 transition-all cursor-pointer"
+          >
+            <RotateCw className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Energy Minimization (Clean 3D / Lightning icon) */}
+        {onClean3D && (
+          <button
+            type="button"
+            onClick={() => {
+              soundEngine.playSuccess();
+              onClean3D();
+            }}
+            title="Energy Minimization (VSEPR 3D Optimization)"
+            className="p-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition-all cursor-pointer shadow-xs"
+          >
+            <Zap className="w-4 h-4 fill-current" />
+          </button>
+        )}
+
+        <div className="h-4 w-px bg-slate-700 mx-0.5" />
+
+        {/* Model Style Selector */}
+        {(['ballAndStick', 'spaceFilling', 'licorice', 'wireframe'] as DisplayStyle[]).map((st) => (
+          <button
+            key={st}
+            type="button"
+            onClick={() => {
+              soundEngine.playTap();
+              onDisplayStyleChange(st);
+            }}
+            title={st === 'ballAndStick' ? 'Ball and Stick' : st === 'spaceFilling' ? 'Spacefill (CPK)' : st === 'licorice' ? 'Stick' : 'Wireframe'}
+            className={`px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+              displayStyle === st ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            {st === 'ballAndStick' ? 'Ball & Stick' : st === 'spaceFilling' ? 'Spacefill' : st === 'licorice' ? 'Stick' : 'Wire'}
+          </button>
+        ))}
+
+        <div className="h-4 w-px bg-slate-700 mx-0.5" />
+
+        {/* Measurement Tool Toggle */}
+        <button
+          type="button"
+          onClick={() => {
+            soundEngine.playTap();
+            onMeasurementModeChange(measurementMode === 'angle' ? 'none' : 'angle');
+          }}
+          title="Bond Angle Measurement (°)"
+          className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            measurementMode === 'angle' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+          }`}
+        >
+          <Compass className="w-4 h-4" />
+        </button>
+
         {/* DRAG / PAN vs ROTATE MODE SWITCHER */}
-        <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+        <div className="flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700">
           <button
             type="button"
             onClick={() => {
               soundEngine.playTap();
               setNavigationMode('rotate');
             }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-montserrat font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
               navigationMode === 'rotate'
-                ? 'bg-white text-[#0B1F2A] shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-slate-700 text-white shadow-xs'
+                : 'text-slate-400 hover:text-white'
             }`}
-            title="Rotate 360° Mode (Left Drag to Rotate, Right Drag to Pan)"
+            title="Rotate 360° Mode"
           >
-            <RotateCw className="w-3.5 h-3.5 text-[#00C2D1]" />
+            <RotateCw className="w-3.5 h-3.5 text-sky-400" />
             <span className="hidden sm:inline">Rotate</span>
           </button>
           <button
@@ -994,15 +1071,15 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
               soundEngine.playTap();
               setNavigationMode('pan');
             }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-montserrat font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
               navigationMode === 'pan'
-                ? 'bg-[#00C2D1] text-white shadow-xs'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-sky-600 text-white shadow-xs'
+                : 'text-slate-400 hover:text-white'
             }`}
-            title="Pan / Move Mode (Left Drag or Right Drag to Move Molecule across canvas)"
+            title="Pan / Move Mode"
           >
             <Move className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Pan / Move</span>
+            <span className="hidden sm:inline">Pan</span>
           </button>
         </div>
 
@@ -1010,19 +1087,19 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         <button
           type="button"
           onClick={handleRecenter}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#00C2D1] text-white hover:bg-[#008E9B] text-xs font-montserrat font-extrabold transition-all cursor-pointer shadow-xs"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-sky-600 text-white hover:bg-sky-500 text-xs font-bold transition-all cursor-pointer shadow-xs"
           title="Center molecule squarely in viewport (Reset Camera)"
         >
           <Focus className="w-3.5 h-3.5" />
-          <span>Center</span>
+          <span className="hidden sm:inline">Center</span>
         </button>
 
         {/* Auto-Rotation Spin */}
         <button
           type="button"
           onClick={handleToggleSpin}
-          className={`p-1.5 rounded-lg text-xs font-montserrat font-bold transition-all cursor-pointer ${
-            isSpinning ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'text-slate-600 hover:bg-slate-100'
+          className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            isSpinning ? 'text-amber-400 bg-slate-800' : 'text-slate-400 hover:text-white hover:bg-slate-800'
           }`}
           title="Toggle Auto-Spin (360°)"
         >
@@ -1033,7 +1110,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         <button
           type="button"
           onClick={() => handleZoom(1.2)}
-          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
           title="Zoom In"
         >
           <ZoomIn className="w-4 h-4" />
@@ -1041,7 +1118,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         <button
           type="button"
           onClick={() => handleZoom(0.8)}
-          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
           title="Zoom Out"
         >
           <ZoomOut className="w-4 h-4" />
@@ -1051,10 +1128,10 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         <button
           type="button"
           onClick={handleTakeSnapshot}
-          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
           title="Download PNG Snapshot"
         >
-          <Camera className="w-4 h-4 text-emerald-600" />
+          <Camera className="w-4 h-4 text-emerald-400" />
         </button>
 
         {/* Labels Toggle */}
@@ -1064,10 +1141,10 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
             soundEngine.playTap();
             onToggleLabels();
           }}
-          className={`p-1.5 rounded-lg text-xs font-montserrat font-bold transition-all cursor-pointer ${
-            showLabels ? 'bg-teal-50 text-[#00C2D1] border border-teal-200' : 'text-slate-400 hover:bg-slate-100'
+          className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            showLabels ? 'bg-sky-900 text-sky-400 border border-sky-600' : 'text-slate-400 hover:text-white hover:bg-slate-800'
           }`}
-          title="Toggle Atom Labels (C1, H2...)"
+          title="Toggle Atom Labels"
         >
           <Tag className="w-4 h-4" />
         </button>
@@ -1076,7 +1153,7 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         <button
           type="button"
           onClick={toggleFullscreen}
-          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
           title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
         >
           {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}

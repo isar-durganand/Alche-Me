@@ -881,4 +881,107 @@ H  -4.6000  -3.1500   0.0000`,
       hsab_classification: 'Quinoid Chromophore (Narrow band gap of 3.6 eV gives intense pink visible absorption at 553 nm in base)',
     },
   },
+  {
+    id: 'phenanthrene',
+    name: 'Phenanthrene',
+    formula: 'C₁₄H₁₀',
+    iupacName: 'Phenanthrene',
+    category: 'organic',
+    geometry: 'Planar Polycyclic Aromatic Hydrocarbon',
+    vseprNotation: 'Planar sp² conjugated rings',
+    idealBondAngle: '120.0°',
+    dipoleMoment: '0.04 D (Non-polar)',
+    molarMass: 178.23,
+    description: 'Iconic polycyclic aromatic hydrocarbon (PAH) composed of three fused benzene rings in an angular arrangement. Classic benchmark for 2D/3D chemical drawing engines.',
+    provenance: 'NIST Chemistry WebBook / MolView Benchmark',
+    raw_xyz: `24
+Phenanthrene C14H10
+C   -1.210   2.420   0.000
+C    0.000   3.120   0.000
+C    1.210   2.420   0.000
+C    1.210   1.020   0.000
+C    0.000   0.320   0.000
+C   -1.210   1.020   0.000
+C    2.420   0.320   0.000
+C    2.420  -1.080   0.000
+C    1.210  -1.780   0.000
+C    0.000  -1.080   0.000
+C   -1.210  -1.780   0.000
+C   -2.420  -1.080   0.000
+C   -2.420   0.320   0.000
+C    0.000  -3.180   0.000
+H   -2.140   2.960   0.000
+H    0.000   4.200   0.000
+H    2.140   2.960   0.000
+H    3.350   0.860   0.000
+H    3.350  -1.620   0.000
+H    2.140  -2.320   0.000
+H   -1.210  -2.860   0.000
+H   -3.350  -1.620   0.000
+H   -3.350   0.860   0.000
+H    0.000  -4.260   0.000`,
+    atoms: [
+      { id: 'pt-0', index: 0, symbol: 'C', x: -1.21, y: 2.42, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-1', index: 1, symbol: 'C', x: 0.00, y: 3.12, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-2', index: 2, symbol: 'C', x: 1.21, y: 2.42, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-3', index: 3, symbol: 'C', x: 1.21, y: 1.02, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-4', index: 4, symbol: 'C', x: 0.00, y: 0.32, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-5', index: 5, symbol: 'C', x: -1.21, y: 1.02, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-6', index: 6, symbol: 'C', x: 2.42, y: 0.32, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-7', index: 7, symbol: 'C', x: 2.42, y: -1.08, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-8', index: 8, symbol: 'C', x: 1.21, y: -1.78, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-9', index: 9, symbol: 'C', x: 0.00, y: -1.08, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-10', index: 10, symbol: 'C', x: -1.21, y: -1.78, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-11', index: 11, symbol: 'C', x: -2.42, y: -1.08, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-12', index: 12, symbol: 'C', x: -2.42, y: 0.32, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-13', index: 13, symbol: 'C', x: 1.21, y: -3.18, z: 0.0, hybridization: 'sp²' },
+      { id: 'pt-14', index: 14, symbol: 'H', x: -2.14, y: 2.96, z: 0.0 },
+      { id: 'pt-15', index: 15, symbol: 'H', x: 0.00, y: 4.20, z: 0.0 },
+      { id: 'pt-16', index: 16, symbol: 'H', x: 2.14, y: 2.96, z: 0.0 },
+      { id: 'pt-17', index: 17, symbol: 'H', x: 3.35, y: 0.86, z: 0.0 },
+      { id: 'pt-18', index: 18, symbol: 'H', x: 3.35, y: -1.62, z: 0.0 },
+      { id: 'pt-19', index: 19, symbol: 'H', x: -1.21, y: -2.86, z: 0.0 },
+      { id: 'pt-20', index: 20, symbol: 'H', x: -3.35, y: -1.62, z: 0.0 },
+      { id: 'pt-21', index: 21, symbol: 'H', x: -3.35, y: 0.86, z: 0.0 },
+      { id: 'pt-22', index: 22, symbol: 'H', x: 2.14, y: -3.72, z: 0.0 },
+      { id: 'pt-23', index: 23, symbol: 'H', x: 0.28, y: -3.72, z: 0.0 },
+    ],
+    bonds: [
+      { id: 'ptb-1', from: 0, to: 1, order: 2 },
+      { id: 'ptb-2', from: 1, to: 2, order: 1 },
+      { id: 'ptb-3', from: 2, to: 3, order: 2 },
+      { id: 'ptb-4', from: 3, to: 4, order: 1 },
+      { id: 'ptb-5', from: 4, to: 5, order: 2 },
+      { id: 'ptb-6', from: 5, to: 0, order: 1 },
+      { id: 'ptb-7', from: 3, to: 6, order: 1 },
+      { id: 'ptb-8', from: 6, to: 7, order: 2 },
+      { id: 'ptb-9', from: 7, to: 8, order: 1 },
+      { id: 'ptb-10', from: 8, to: 9, order: 2 },
+      { id: 'ptb-11', from: 9, to: 4, order: 1 },
+      { id: 'ptb-12', from: 9, to: 10, order: 1 },
+      { id: 'ptb-13', from: 10, to: 11, order: 2 },
+      { id: 'ptb-14', from: 11, to: 12, order: 1 },
+      { id: 'ptb-15', from: 12, to: 5, order: 1 },
+      { id: 'ptb-16', from: 8, to: 13, order: 1 },
+      { id: 'ptb-17', from: 0, to: 14, order: 1 },
+      { id: 'ptb-18', from: 1, to: 15, order: 1 },
+      { id: 'ptb-19', from: 2, to: 16, order: 1 },
+      { id: 'ptb-20', from: 6, to: 17, order: 1 },
+      { id: 'ptb-21', from: 7, to: 18, order: 1 },
+      { id: 'ptb-22', from: 10, to: 19, order: 1 },
+      { id: 'ptb-23', from: 11, to: 20, order: 1 },
+      { id: 'ptb-24', from: 12, to: 21, order: 1 },
+    ],
+    orbitals_summary: {
+      homo_ev: -8.03,
+      lumo_ev: -1.18,
+      band_gap_ev: 6.85,
+      chemical_hardness_ev: 3.425,
+      chemical_softness_ev_inv: 0.146,
+      chemical_potential_ev: -4.605,
+      electronegativity_ev: 4.605,
+      electrophilicity_index: 3.10,
+      hsab_classification: 'Polycyclic Aromatic System',
+    },
+  },
 ];
