@@ -52,7 +52,7 @@ export const App: React.FC = () => {
           />
         );
       case 'virtual-lab':
-        return <VirtualLabScreen />;
+        return <VirtualLabScreen onNavigate={handleNavigate} />;
       case 'settings':
         return <SettingsScreen />;
       default:
