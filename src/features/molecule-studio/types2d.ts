@@ -27,6 +27,7 @@ export interface Bond2D {
 export type SketcherTool =
   | 'select'
   | 'erase'
+  | 'atom'
   | 'singleBond'
   | 'doubleBond'
   | 'tripleBond'

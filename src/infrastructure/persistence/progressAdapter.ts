@@ -9,6 +9,8 @@ import { ActivityStatus, ProgressRecord } from '../../domain/types';
 export interface PlayerProfile {
   id: string;
   displayName: string;
+  avatar?: string;
+  avatarColor?: string;
   level: number;
   xp: number;
   streakDays: number;
@@ -27,6 +29,8 @@ const STORAGE_KEYS = {
 const DEFAULT_PROFILE: PlayerProfile = {
   id: 'guest-scholar',
   displayName: 'Apprentice Chemist',
+  avatar: '🧪',
+  avatarColor: 'teal',
   level: 1,
   xp: 0,
   streakDays: 1,
@@ -201,6 +205,17 @@ export const progressAdapter = {
     profile.updatedAt = new Date().toISOString();
     this.savePlayerProfile(profile);
     return profile;
+  },
+
+  updatePlayerProfile(updates: Partial<PlayerProfile>): PlayerProfile {
+    const profile = this.getPlayerProfile();
+    const updated = {
+      ...profile,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    this.savePlayerProfile(updated);
+    return updated;
   },
 
   resetAllProgress(): void {

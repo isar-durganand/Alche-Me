@@ -220,22 +220,29 @@ export const AppShell: React.FC<AppShellProps> = ({
           <div className="p-4 border-t-2 border-slate-100 bg-slate-50/50 space-y-2 text-xs">
             <button
               onClick={() => setShowProfileModal(true)}
-              className="w-full p-3 rounded-xl border-2 border-slate-200/80 bg-white hover:border-[#00C2D1] shadow-sm transition-all flex items-center justify-between cursor-pointer group"
+              className="w-full p-2.5 rounded-xl border-2 border-slate-200/80 bg-white hover:border-[#00C2D1] shadow-xs transition-all flex items-center justify-between cursor-pointer group"
+              title="Open Scholar Profile & Avatar Editor"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 text-[#00C2D1] font-montserrat font-extrabold text-sm flex items-center justify-center group-hover:scale-105 transition-transform">
-                  {profile.level}
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-200 text-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-xs">
+                  {profile.avatar || '🧪'}
                 </div>
-                <div className="text-left">
-                  <span className="font-montserrat font-bold text-xs block text-[#0B1F2A] truncate max-w-[100px]">
-                    {profile.displayName}
+                <div className="text-left min-w-0">
+                  <span className="font-montserrat font-bold text-xs block text-[#0B1F2A] truncate">
+                    {profile.displayName || 'Apprentice Chemist'}
                   </span>
-                  <span className="text-[10px] font-montserrat font-extrabold text-[#F5B942] flex items-center gap-0.5">
-                    <Zap className="w-3 h-3 fill-current" /> {profile.xp} XP
-                  </span>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <span className="font-montserrat font-extrabold text-[#00C2D1]">
+                      Lvl {profile.level}
+                    </span>
+                    <span className="text-slate-300">•</span>
+                    <span className="font-montserrat font-extrabold text-[#F5B942] flex items-center gap-0.5">
+                      <Zap className="w-2.5 h-2.5 fill-current" /> {profile.xp} XP
+                    </span>
+                  </div>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#00C2D1] transition-colors" />
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#00C2D1] shrink-0 transition-colors ml-1" />
             </button>
           </div>
         </aside>
@@ -298,7 +305,8 @@ export const AppShell: React.FC<AppShellProps> = ({
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border-2 border-amber-300/80 hover:bg-amber-100 transition-colors cursor-pointer shadow-sm"
                 title="Scholar XP & Level Progress"
               >
-                <Zap className="w-4 h-4 fill-amber-500 text-amber-500" />
+                <span className="text-sm mr-0.5">{profile.avatar || '🧪'}</span>
+                <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                 <span className="font-montserrat font-extrabold text-xs text-amber-900">
                   {profile.xp} XP
                 </span>

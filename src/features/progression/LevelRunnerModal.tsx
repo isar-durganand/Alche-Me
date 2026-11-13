@@ -20,7 +20,12 @@ import {
   Flame,
   Atom,
   Layers,
-  Beaker
+  Beaker,
+  Target,
+  Lightbulb,
+  Droplets,
+  Eye,
+  Info
 } from 'lucide-react';
 import { LevelSchema } from '../../domain/types/curriculum';
 import { progressAdapter } from '../../infrastructure/persistence/progressAdapter';
@@ -29,6 +34,8 @@ import { Modal, Button, Badge, ProgressBar, MarkdownRenderer } from '../../compo
 import { ConfettiCanvas } from '../../components/ui/ConfettiCanvas';
 import { ClassificationActivity } from './activities/ClassificationActivity';
 import { RealisticMoleculeViewer3D } from '../../components/3d/RealisticMoleculeViewer3D';
+import { InteractiveApparatusWidget } from './components/InteractiveApparatusWidget';
+import { InteractiveLessonInfographic } from './components/InteractiveLessonInfographic';
 
 export interface LevelRunnerModalProps {
   level: LevelSchema;
@@ -50,10 +57,13 @@ export const LevelRunnerModal: React.FC<LevelRunnerModalProps> = ({
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [assessmentSubmitted, setAssessmentSubmitted] = useState<boolean>(false);
   const [finalScore, setFinalScore] = useState<number>(0);
+  const [showFullNotes, setShowFullNotes] = useState<boolean>(false);
+  const [activeObjectiveClue, setActiveObjectiveClue] = useState<number | null>(null);
 
   const { rewards, scoringRules, masteryThreshold } = level;
+  const playerProfile = progressAdapter.getPlayerProfile();
 
-  // 1. Effective Lessons (custom or curated based on curriculum specifications)
+  // 1. Effective Lessons
   const effectiveLessonSections = level.lessonSections && level.lessonSections.length > 0
     ? level.lessonSections
     : [
@@ -74,7 +84,7 @@ export const LevelRunnerModal: React.FC<LevelRunnerModalProps> = ({
         }
       ];
 
-  // 2. Effective Assessment Questions (custom or curated based on curriculum specifications)
+  // 2. Effective Assessment Questions
   const effectiveAssessment = level.assessment && level.assessment.questions && level.assessment.questions.length > 0
     ? level.assessment
     : {
@@ -172,10 +182,8 @@ export const LevelRunnerModal: React.FC<LevelRunnerModalProps> = ({
     const weightedScore = Math.round(actScore * actWeight + assessScore * assessWeight);
     setFinalScore(weightedScore);
 
-    // Persist progression deterministically
     progressAdapter.completeActivity(level.id, weightedScore, rewards.xp);
 
-    // If badge reward exists, award achievement
     if (rewards.badgeId) {
       const profile = progressAdapter.getPlayerProfile();
       if (!profile.earnedAchievements.includes(rewards.badgeId)) {
@@ -206,26 +214,26 @@ export const LevelRunnerModal: React.FC<LevelRunnerModalProps> = ({
       onClose={onClose}
       title={
         step === 'briefing'
-          ? `Mission Briefing: ${level.title}`
+          ? `Mission 0${level.order}: ${level.title}`
           : step === 'lesson'
-          ? `Scientific Principles: ${level.title}`
+          ? `Discovery Lab: ${level.title}`
           : step === 'activity'
-          ? `Interactive Investigation: ${level.title}`
+          ? `Investigation Workbench: ${level.title}`
           : step === 'assessment'
-          ? `Mastery Assessment: ${level.title}`
-          : `Mission Clearance: ${level.title}`
+          ? `Mastery Trial: ${level.title}`
+          : `Victory & Clearance: ${level.title}`
       }
-      description={`Mission 0${level.order} • Estimated Duration: ${level.estimatedMinutes} Mins • +${rewards.xp} XP`}
+      description={`Curriculum Quest • ${level.estimatedMinutes} Mins • +${rewards.xp} XP Bounty`}
       size="xl"
     >
-      <div className="space-y-6 text-sm sm:text-base">
+      <div className="space-y-5 text-sm sm:text-base select-none">
         {/* Step Indicator Progress Bar */}
-        <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+        <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100 flex-wrap gap-2">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {[
               { id: 'briefing', label: '1. Briefing' },
               { id: 'lesson', label: '2. Discovery' },
-              { id: 'activity', label: '3. Investigation' },
+              { id: 'activity', label: '3. Workbench' },
               { id: 'assessment', label: '4. Mastery' },
             ].map((st, sIdx) => {
               const isActive = step === st.id || (st.id === 'assessment' && step === 'mastery');
@@ -234,7 +242,7 @@ export const LevelRunnerModal: React.FC<LevelRunnerModalProps> = ({
                   {sIdx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-300" />}
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-montserrat font-bold transition-all ${
-                      isActive ? 'bg-[#00C2D1] text-white shadow-xs' : 'bg-slate-100 text-slate-600'
+                      isActive ? 'bg-[#00C2D1] text-white shadow-xs scale-105' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
                     {st.label}
@@ -244,114 +252,206 @@ export const LevelRunnerModal: React.FC<LevelRunnerModalProps> = ({
             })}
           </div>
 
-          <Badge variant="gold" size="sm">
-            +{rewards.xp} XP Reward
-          </Badge>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center text-amber-400">
+              <Star className="w-4 h-4 fill-current" />
+              <Star className="w-4 h-4 fill-current" />
+              <Star className="w-4 h-4 fill-current text-slate-200" />
+            </div>
+            <Badge variant="gold" size="sm">
+              +{rewards.xp} XP Bounty
+            </Badge>
+          </div>
         </div>
 
-        {/* STEP 1: BRIEFING */}
+        {/* STEP 1: GRAPHICALLY RICH BRIEFING */}
         {step === 'briefing' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="p-6 rounded-3xl border-2 border-slate-100 bg-teal-50/40 space-y-3">
-              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#00C2D1] block">
-                Mission Scenario & Curriculum Objective
-              </span>
-              <MarkdownRenderer
-                content={level.shortDescription}
-                className="text-base sm:text-lg text-[#0B1F2A] font-medium leading-relaxed"
-              />
+          <div className="space-y-5 animate-in fade-in duration-200">
+            {/* Playful Game Mascot Speech Bubble Header */}
+            <div className="p-4 sm:p-5 rounded-3xl border-2 border-teal-200 bg-gradient-to-r from-teal-500/10 via-cyan-500/10 to-amber-500/10 flex items-start gap-3.5 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-white border-2 border-teal-300 flex items-center justify-center text-2xl shadow-xs shrink-0 animate-bounce">
+                {playerProfile.avatar || '🧪'}
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-teal-800 bg-teal-100/70 px-2.5 py-0.5 rounded-full">
+                    Professor Spark's Mission Brief
+                  </span>
+                  <span className="text-[11px] font-montserrat font-bold text-slate-400">
+                    Difficulty: {level.difficulty.toUpperCase()}
+                  </span>
+                </div>
+                <p className="text-sm sm:text-base font-montserrat font-bold text-[#0B1F2A] leading-snug">
+                  {level.shortDescription}
+                </p>
+              </div>
             </div>
 
-            {/* Key Learning Competencies */}
+            {/* Interactive Micro-Apparatus Sandbox Preview Widget */}
+            <InteractiveApparatusWidget />
+
+            {/* Target Learning Objectives as Interactive Quest Cards */}
             <div className="space-y-3">
-              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#0B1F2A] block">
-                Target Learning Competencies
-              </span>
-              <ul className="space-y-2.5">
-                {level.learningObjectives.map((obj, idx) => (
-                  <li
-                    key={idx}
-                    className="flex items-start gap-3.5 p-4 rounded-2xl border-2 border-slate-100 bg-white shadow-xs text-[#0B1F2A] leading-relaxed"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-[#00C2D1] shrink-0 mt-0.5" />
-                    <span className="text-sm sm:text-base font-medium">{obj}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="flex items-center justify-between">
+                <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#0B1F2A] flex items-center gap-1.5">
+                  <Target className="w-4 h-4 text-[#00C2D1]" />
+                  Mission Quest Objectives ({level.learningObjectives.length})
+                </span>
+                <span className="text-[11px] text-slate-400 font-medium">
+                  Tap card for clue preview
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2.5">
+                {level.learningObjectives.map((obj, idx) => {
+                  const icons = [Target, Lightbulb, Sparkles, Beaker];
+                  const IconComp = icons[idx % icons.length];
+                  const isClueOpen = activeObjectiveClue === idx;
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        soundEngine.playTap();
+                        setActiveObjectiveClue(isClueOpen ? null : idx);
+                      }}
+                      className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col gap-2 ${
+                        isClueOpen
+                          ? 'border-[#00C2D1] bg-teal-50/70 shadow-xs'
+                          : 'border-slate-100 hover:border-slate-300 bg-white shadow-xs hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-xl shrink-0 ${isClueOpen ? 'bg-[#00C2D1] text-white' : 'bg-teal-50 text-[#00C2D1]'}`}>
+                            <IconComp className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="font-montserrat font-bold text-xs sm:text-sm text-[#0B1F2A] block leading-snug">
+                              {obj}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="text-[10px] font-mono font-bold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full shrink-0">
+                          +25 XP
+                        </span>
+                      </div>
+
+                      {isClueOpen && (
+                        <div className="pl-10 text-xs text-teal-900 bg-white/70 p-2.5 rounded-xl border border-teal-200 animate-in fade-in">
+                          🔍 <strong>Laboratory Pro-Tip:</strong> Pay close attention to distinguishing measurable physical metrics (mass, temperature, volume) from speculative chemical guesses.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Key Concepts Tags */}
+            {/* Collectible Key Concepts Badges */}
             <div className="space-y-2">
-              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#0B1F2A] block">
-                Investigated Concepts
+              <span className="font-montserrat font-extrabold text-xs uppercase tracking-wider text-[#0B1F2A] flex items-center gap-1.5">
+                <Atom className="w-4 h-4 text-[#00C2D1]" />
+                Collectible Concept Badges
               </span>
               <div className="flex flex-wrap gap-2">
                 {level.keyConcepts.map((concept, cIdx) => (
-                  <span
+                  <button
                     key={cIdx}
-                    className="px-3 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-800 text-xs sm:text-sm font-semibold"
+                    type="button"
+                    onClick={() => soundEngine.playElementPip(10 + cIdx * 4)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-50 border-2 border-slate-200/80 hover:border-[#00C2D1] hover:bg-teal-50 text-slate-800 text-xs font-montserrat font-bold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                   >
-                    {concept}
-                  </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00C2D1]" />
+                    <span>{concept}</span>
+                  </button>
                 ))}
               </div>
             </div>
 
-            <div className="pt-4 flex justify-between items-center border-t border-slate-100">
+            {/* Action Bar */}
+            <div className="pt-3 flex justify-between items-center border-t border-slate-100">
               <Button size="sm" variant="secondary" onClick={onClose} className="font-montserrat font-bold">
-                CANCEL
+                ABORT MISSION
               </Button>
               <Button
                 variant="primary"
                 size="md"
                 rightIcon={<Play className="w-4 h-4 fill-current" />}
                 onClick={() => {
-                  soundEngine.playTap();
+                  soundEngine.playVictory();
                   setStep('lesson');
                 }}
-                className="font-montserrat font-bold cursor-pointer"
+                className="font-montserrat font-black cursor-pointer shadow-md hover:scale-105 transition-all text-sm px-6"
               >
-                BEGIN LESSON
+                🚀 BEGIN DISCOVERY QUEST
               </Button>
             </div>
           </div>
         )}
 
-        {/* STEP 2: LESSON & DISCOVERY */}
+        {/* STEP 2: GRAPHICALLY RICH LESSON & DISCOVERY */}
         {step === 'lesson' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            {effectiveLessonSections.map((sec) => (
-              <div
-                key={sec.id}
-                className="p-6 rounded-3xl border-2 border-slate-100 bg-white shadow-sm space-y-4"
-              >
-                <h3 className="font-montserrat font-extrabold text-lg sm:text-xl text-[#0B1F2A] border-b border-slate-100 pb-2">
-                  {sec.title}
-                </h3>
-                <MarkdownRenderer
-                  content={sec.content}
-                  className="text-sm sm:text-base text-slate-700 leading-relaxed font-normal"
-                />
+          <div className="space-y-5 animate-in fade-in duration-200">
+            {/* Interactive Infographic & Visual Simulator */}
+            <InteractiveLessonInfographic />
 
-                {sec.keyTakeaways && sec.keyTakeaways.length > 0 && (
-                  <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-200/80 space-y-2">
-                    <span className="text-xs font-montserrat font-extrabold uppercase tracking-wider text-teal-800 block">
-                      Key Takeaways & Formulas
-                    </span>
-                    <ul className="space-y-1.5 text-xs sm:text-sm text-teal-950 font-medium">
-                      {sec.keyTakeaways.map((point, pIdx) => (
-                        <li key={pIdx} className="flex items-start gap-2.5">
-                          <span className="text-[#00C2D1] font-bold text-base leading-none">•</span>
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+            {/* Toggle Full Scientific Curriculum Notes */}
+            <div className="p-4 rounded-2xl border-2 border-slate-100 bg-slate-50/70 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-[#00C2D1]" />
+                  <span className="font-montserrat font-extrabold text-xs text-[#0B1F2A]">
+                    Deep Scientific Reference & Syllabus Notes
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFullNotes((prev) => !prev)}
+                  className="text-xs font-montserrat font-bold text-[#00C2D1] hover:underline cursor-pointer"
+                >
+                  {showFullNotes ? 'Hide Reference Text ▲' : 'View Full Scientific Notes ▼'}
+                </button>
               </div>
-            ))}
 
-            <div className="pt-4 flex justify-between items-center border-t border-slate-100">
+              {showFullNotes && (
+                <div className="space-y-4 pt-2 border-t border-slate-200 animate-in fade-in">
+                  {effectiveLessonSections.map((sec) => (
+                    <div
+                      key={sec.id}
+                      className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3"
+                    >
+                      <h4 className="font-montserrat font-bold text-sm text-[#0B1F2A]">
+                        {sec.title}
+                      </h4>
+                      <MarkdownRenderer
+                        content={sec.content}
+                        className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal"
+                      />
+
+                      {sec.keyTakeaways && sec.keyTakeaways.length > 0 && (
+                        <div className="p-3 rounded-xl bg-teal-50 border border-teal-200 space-y-1.5 text-xs text-teal-950">
+                          <span className="font-montserrat font-bold uppercase tracking-wider text-teal-800 block text-[10px]">
+                            Core Takeaways
+                          </span>
+                          <ul className="space-y-1">
+                            {sec.keyTakeaways.map((point, pIdx) => (
+                              <li key={pIdx} className="flex items-start gap-1.5">
+                                <span className="text-[#00C2D1] font-bold">•</span>
+                                <span>{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="pt-3 flex justify-between items-center border-t border-slate-100">
               <Button
                 size="sm"
                 variant="secondary"

@@ -13,14 +13,14 @@ export type CurriculumLevel = LevelSchema;
 
 export const CURRICULUM_WORLDS: WorldSchema[] = [
   // =========================================================================
-  // WORLD 1 — THE SPARK OF DISCOVERY
+  // WORLD 1 — SPARK PARK
   // =========================================================================
   {
     id: 'world-1-discovery',
     num: 1,
-    title: 'The Spark of Discovery',
-    theme: 'Welcoming discovery campus, hands-on science garden, beginner laboratory',
-    story: 'The campus Discovery Core has lost its scientific records. The player restores it by learning how to observe matter, classify materials, measure carefully, and think like a scientist.',
+    title: 'Spark Park',
+    theme: 'Science garden, beginner lab & curious observation',
+    story: 'Welcome to Spark Park! The park Discovery Core needs your keen eyes. Explore fun experiments, spot physical changes, and become an official Junior Alchemist!',
     worldOutcome: 'Understands what chemistry studies, recognizes matter and its states, distinguishes observations from explanations, and uses basic laboratory safety and measurement tools.',
     thumbnail: '/assets/worlds/world-1.png',
     levels: [
@@ -488,14 +488,14 @@ export const CURRICULUM_WORLDS: WorldSchema[] = [
   },
 
   // =========================================================================
-  // WORLD 2 — ATOMIC FRONTIER
+  // WORLD 2 — ATOM KINGDOM
   // =========================================================================
   {
     id: 'world-2-atomic',
     num: 2,
-    title: 'Atomic Frontier',
-    theme: 'Vast particle universe with interactive atomic scientific models',
-    story: 'Travel into the microscopic realm to repair the Element Atlas and discover the fundamental quantum building blocks of the elements.',
+    title: 'Atom Kingdom',
+    theme: 'Tiny particle universe with swirling electrons & atomic building blocks',
+    story: 'Shrink down into Atom Kingdom! Meet protons, neutrons, and speedy electrons. Build the element atlas from scratch and discover the secrets of the periodic table.',
     worldOutcome: 'Understands atomic subatomic particles, atomic number, isotopes, ion formation, periodic table arrangement, and electron configurations.',
     thumbnail: '/assets/worlds/world-2.png',
     prerequisiteWorldId: 'world-1-discovery',
@@ -512,14 +512,14 @@ export const CURRICULUM_WORLDS: WorldSchema[] = [
   },
 
   // =========================================================================
-  // WORLD 3 — THE BONDING CITADEL
+  // WORLD 3 — MOLECULE CRAFT
   // =========================================================================
   {
     id: 'world-3-bonding',
     num: 3,
-    title: 'The Bonding Citadel',
-    theme: 'Molecular architecture world of crystal lattices, bridges, and reaction chambers',
-    story: 'The citadel structures are collapsing because molecular blueprints are scrambled. Master chemical bonds, 3D shapes, and chemical reactions.',
+    title: 'Molecule Craft',
+    theme: 'Playful molecular builder of 3D crystal castles, bridges & bouncy bonds',
+    story: 'Grab your molecular toolkit! Snap atoms together with ionic and covalent bonds, rotate 3D geometries, and craft amazing molecules to build the ultimate science castle.',
     worldOutcome: 'Can explain ionic and covalent bonding, construct basic molecules, interpret formulas, balance equations, and predict 3D shapes.',
     thumbnail: '/assets/worlds/world-3.png',
     prerequisiteWorldId: 'world-2-atomic',
@@ -536,14 +536,14 @@ export const CURRICULUM_WORLDS: WorldSchema[] = [
   },
 
   // =========================================================================
-  // WORLD 4 — THE QUANTITATIVE CRUCIBLE
+  // WORLD 4 — MEASURE MANIA
   // =========================================================================
   {
     id: 'world-4-quantitative',
     num: 4,
-    title: 'The Quantitative Crucible',
-    theme: 'Measurement and simulation complex with particle counters, balances, and graphs',
-    story: 'The Crucible prediction engine is producing inconsistent results. Master particle counting, stoichiometry, concentrations, gas laws, and thermochemistry.',
+    title: 'Measure Mania',
+    theme: 'Numbers, balances, particle counters & the magical mole bridge',
+    story: 'Step right up to Measure Mania! Count trillions of invisible particles, balance tricky reaction recipes, and master the art of chemical measurement with precision.',
     worldOutcome: 'Builds quantitative chemistry foundations for JEE-style problem solving, molarity calculations, and engineering stoichiometry.',
     thumbnail: '/assets/worlds/world-4.png',
     prerequisiteWorldId: 'world-3-bonding',
@@ -560,14 +560,14 @@ export const CURRICULUM_WORLDS: WorldSchema[] = [
   },
 
   // =========================================================================
-  // WORLD 5 — THE REALM OF REACTIONS
+  // WORLD 5 — REACTION ARENA
   // =========================================================================
   {
     id: 'world-5-reactions',
     num: 5,
-    title: 'The Realm of Reactions',
-    theme: 'Connected research districts for physical, inorganic, and organic chemistry',
-    story: 'A network of research stations needs the player to investigate acid-base equilibria, redox half-reactions, and organic functional groups.',
+    title: 'Reaction Arena',
+    theme: 'Mix, fizz, spark & transform acids, bases, battery cells & organic molecules',
+    story: 'Enter the Reaction Arena! Sparks fly, colors shift, and solutions bubble as you master acid-base magic, battery cells, and organic molecular pathways.',
     worldOutcome: 'Develops advanced school and competitive chemistry mastery across organic, inorganic, and electrochemical systems.',
     thumbnail: '/assets/worlds/world-5.png',
     prerequisiteWorldId: 'world-4-quantitative',
@@ -584,14 +584,14 @@ export const CURRICULUM_WORLDS: WorldSchema[] = [
   },
 
   // =========================================================================
-  // WORLD 6 — THE ANALYTICAL LABYRINTH
+  // WORLD 6 — DETECTIVE LAB
   // =========================================================================
   {
     id: 'world-6-analytical',
     num: 6,
-    title: 'The Analytical Labyrinth',
-    theme: 'Realistic analytical laboratory with instruments, sample prep, and digital lab notebook',
-    story: 'The city water and material testing network returns conflicting reports. Master calibration, titrations, spectrophotometry, and chromatography.',
+    title: 'Detective Lab',
+    theme: 'Solve mysteries with color clues, titrations, light beams & chromatography',
+    story: 'Put on your detective hat! The city water has a mystery. Use color-changing indicators, light beams, and test tubes to crack the chemical case!',
     worldOutcome: 'Gains practical analytical laboratory reasoning, data plot interpretation, and reproducible lab reporting skills.',
     thumbnail: '/assets/worlds/world-6.png',
     prerequisiteWorldId: 'world-5-reactions',
@@ -608,14 +608,14 @@ export const CURRICULUM_WORLDS: WorldSchema[] = [
   },
 
   // =========================================================================
-  // WORLD 7 — THE ENGINEERING FRONTIER
+  // WORLD 7 — MAKER WORKSHOP
   // =========================================================================
   {
     id: 'world-7-engineering',
     num: 7,
-    title: 'The Engineering Frontier',
-    theme: 'Materials labs, corrosion chambers, polymers, and industrial engineering simulators',
-    story: 'Apply chemistry to practical engineering materials, corrosion protection, polymer synthesis, fuels, and university lab practicals.',
+    title: 'Maker Workshop',
+    theme: 'Materials, rust defense, cool polymers, super fuels & engineering gadgets',
+    story: 'Welcome to Maker Workshop! Forge shiny alloys, defend metal against sneaky rust, synthesize bouncy polymers, and power real-world engineering machinery.',
     worldOutcome: 'Directly maps to the MRIIRS Engineering Chemistry curriculum (4.5CH101C00H) covering tribology, water softening, and electrochemistry.',
     thumbnail: '/assets/worlds/world-7.png',
     prerequisiteWorldId: 'world-6-analytical',
@@ -632,14 +632,14 @@ export const CURRICULUM_WORLDS: WorldSchema[] = [
   },
 
   // =========================================================================
-  // WORLD 8 — THE ALCHEMIST'S FUTURE
+  // WORLD 8 — FUTURE WORLD
   // =========================================================================
   {
     id: 'world-8-future',
     num: 8,
-    title: "The Alchemist's Future",
-    theme: 'High-tech sustainable industrial campus, green chemistry, and computational studio',
-    story: 'Connects chemistry knowledge, process flow engineering, environmental stewardship, and computational simulations to solve global sustainability challenges.',
+    title: 'Future World',
+    theme: 'Green chemistry, clean energy, computer simulations & eco miracles',
+    story: 'Journey to Future World! Use green chemistry superpowers, computer models, and eco-friendly reactions to heal the planet and earn Grand Alchemist honors.',
     worldOutcome: 'Applies chemistry across industrial systems, understands computational model limitations, and designs sustainable solutions.',
     thumbnail: '/assets/worlds/world-8.png',
     prerequisiteWorldId: 'world-7-engineering',

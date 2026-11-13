@@ -67,10 +67,12 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
   const [hoveredAtomId, setHoveredAtomId] = useState<string | null>(null);
   const [hoveredBondId, setHoveredBondId] = useState<string | null>(null);
   const [selectedAtomIds, setSelectedAtomIds] = useState<string[]>([]);
+  const [mouseCanvasPt, setMouseCanvasPt] = useState<Point2D | null>(null);
   const [dragInfo, setDragInfo] = useState<{
     type: 'bond' | 'atom' | 'pan' | 'chain';
     startScreen: Point2D;
     sourceAtomId?: string;
+    isNewAtom?: boolean;
     currentScreen: Point2D;
   } | null>(null);
 
@@ -377,7 +379,28 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
       return;
     }
 
-    // 4. Bond Drawing & Atom Sprouting Tools
+    // 4. Dedicated Atom Placement Tool
+    if (activeTool === 'atom') {
+      soundEngine.playElementPip(getElementData(activeElement).atomicNumber);
+      if (hitAtom) {
+        // Transform existing atom to activeElement
+        const nextAtoms = atoms.map((a) => (a.id === hitAtom.id ? { ...a, symbol: activeElement } : a));
+        commitChange(nextAtoms, bonds);
+      } else {
+        // Place new standalone atom at exact clicked position
+        const newAtomId = `a-click-${Date.now()}`;
+        const newAtom: Atom2D = {
+          id: newAtomId,
+          x: Math.round(canvasPt.x),
+          y: Math.round(canvasPt.y),
+          symbol: activeElement,
+        };
+        commitChange([...atoms, newAtom], bonds);
+      }
+      return;
+    }
+
+    // 5. Bond Drawing & Atom Sprouting Tools
     if (
       activeTool === 'singleBond' ||
       activeTool === 'doubleBond' ||
@@ -412,13 +435,14 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
           type: 'bond',
           startScreen: { x: e.clientX, y: e.clientY },
           sourceAtomId: hitAtom.id,
+          isNewAtom: false,
           currentScreen: { x: e.clientX, y: e.clientY },
         });
         el.setPointerCapture(e.pointerId);
         return;
       }
 
-      // If clicked on empty space: place an atom or ethane bond
+      // If clicked on empty space: place an atom at exact position
       soundEngine.playElementPip(getElementData(activeElement).atomicNumber);
       const newAtomId = `a-${Date.now()}`;
       const newAtom: Atom2D = {
@@ -429,11 +453,12 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
       };
       commitChange([...atoms, newAtom], bonds);
 
-      // Start dragging bond immediately from this new atom!
+      // Allow dragging bond immediately from this new atom if user drags
       setDragInfo({
         type: 'bond',
         startScreen: { x: e.clientX, y: e.clientY },
         sourceAtomId: newAtomId,
+        isNewAtom: true,
         currentScreen: { x: e.clientX, y: e.clientY },
       });
       el.setPointerCapture(e.pointerId);
@@ -443,6 +468,7 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
   // Pointer Move Handler
   const handlePointerMove = (e: React.PointerEvent) => {
     const canvasPt = screenToCanvasCoords(e.clientX, e.clientY);
+    setMouseCanvasPt(canvasPt);
     const hitAtom = getAtomAt(canvasPt);
     const hitBond = getBondAt(canvasPt);
 
@@ -497,11 +523,68 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
       const releasePt = screenToCanvasCoords(e.clientX, e.clientY);
       const targetAtom = getAtomAt(releasePt);
       const dist = Math.hypot(e.clientX - info.startScreen.x, e.clientY - info.startScreen.y);
-
-      // If user merely clicked without dragging, leave atom as-is
-      if (dist < 10) return;
-
       const order = activeTool === 'doubleBond' ? 2 : activeTool === 'tripleBond' ? 3 : 1;
+
+      // Click without dragging (dist < 10px)
+      if (dist < 10) {
+        // If it was already an existing atom: Auto-sprout attached bond and new atom at zig-zag geometry!
+        if (!info.isNewAtom) {
+          const connectedBonds = bonds.filter((b) => b.from === sourceAtom.id || b.to === sourceAtom.id);
+          const existingAngles = connectedBonds.map((b) => {
+            const otherId = b.from === sourceAtom.id ? b.to : b.from;
+            const other = atoms.find((a) => a.id === otherId);
+            if (!other) return 0;
+            return Math.atan2(other.y - sourceAtom.y, other.x - sourceAtom.x);
+          });
+
+          let bestAngle = 0;
+          if (existingAngles.length === 0) {
+            bestAngle = 0; // East (0 deg)
+          } else if (existingAngles.length === 1) {
+            // Standard zig-zag (+120 deg)
+            bestAngle = existingAngles[0] + (Math.PI * 2) / 3;
+          } else {
+            // Largest uncrowded gap
+            const sorted = [...existingAngles].map((a) => (a < 0 ? a + 2 * Math.PI : a)).sort((a, b) => a - b);
+            let maxGap = 0;
+            let gapMid = 0;
+            for (let i = 0; i < sorted.length; i++) {
+              const next = i === sorted.length - 1 ? sorted[0] + 2 * Math.PI : sorted[i + 1];
+              const gap = next - sorted[i];
+              if (gap > maxGap) {
+                maxGap = gap;
+                gapMid = sorted[i] + gap / 2;
+              }
+            }
+            bestAngle = gapMid;
+          }
+
+          const deg = Math.round((bestAngle * 180) / Math.PI / 30) * 30;
+          const rad = (deg * Math.PI) / 180;
+          const newX = Math.round(sourceAtom.x + Math.cos(rad) * BOND_LENGTH);
+          const newY = Math.round(sourceAtom.y + Math.sin(rad) * BOND_LENGTH);
+
+          soundEngine.playElementPip(getElementData(activeElement).atomicNumber);
+          const newAtomId = `a-sprout-${Date.now()}`;
+          const newAtom: Atom2D = {
+            id: newAtomId,
+            x: newX,
+            y: newY,
+            symbol: activeElement,
+          };
+
+          const newBond: Bond2D = {
+            id: `b-sprout-${Date.now()}`,
+            from: sourceAtom.id,
+            to: newAtomId,
+            order,
+          };
+
+          commitChange([...atoms, newAtom], [...bonds, newBond]);
+        }
+        // If it was a newly placed atom, it remains placed exactly where clicked!
+        return;
+      }
 
       // Released over another existing atom -> Connect bond!
       if (targetAtom && targetAtom.id !== sourceAtom.id) {
@@ -726,6 +809,18 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
       <div className="flex-1 flex w-full h-full relative overflow-hidden">
         {/* 2. Left Vertical Toolbar matching Screenshot 1 */}
         <div className="w-10 border-r border-slate-200 bg-[#F8F9FA] flex flex-col items-center py-1.5 gap-1 shrink-0 z-10 overflow-y-auto">
+          {/* Direct Atom Tool */}
+          <button
+            type="button"
+            onClick={() => setActiveTool('atom')}
+            title={`Place Atom (${activeElement}) - Click canvas to drop atom`}
+            className={`w-8 h-8 rounded-md flex items-center justify-center font-montserrat font-black text-xs transition-all cursor-pointer ${
+              activeTool === 'atom' ? 'bg-[#D0EBF8] text-[#0070BA] font-extrabold shadow-xs ring-2 ring-[#0070BA]/30' : 'hover:bg-slate-200 text-slate-700'
+            }`}
+          >
+            <span>{activeElement}</span>
+          </button>
+
           {/* Single Bond */}
           <button
             type="button"
@@ -841,12 +936,40 @@ export const ChemicalSketcher2D: React.FC<ChemicalSketcher2DProps> = ({
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onPointerLeave={() => setMouseCanvasPt(null)}
           onWheel={handleWheel}
           onContextMenu={(e) => e.preventDefault()}
           className="flex-1 w-full h-full bg-white relative overflow-hidden cursor-crosshair touch-none"
         >
           <svg className="w-full h-full absolute inset-0 pointer-events-none">
             <g transform={`translate(${panOffset.x}, ${panOffset.y}) scale(${zoom})`}>
+              {/* Ghost Cursor Preview when hovering empty space */}
+              {mouseCanvasPt && !hoveredAtomId && !hoveredBondId && !dragInfo && (
+                <g opacity={0.55} className="pointer-events-none transition-opacity">
+                  <circle
+                    cx={mouseCanvasPt.x}
+                    cy={mouseCanvasPt.y}
+                    r={10}
+                    fill="#00C2D1"
+                    fillOpacity={0.15}
+                    stroke="#00C2D1"
+                    strokeWidth={1.5}
+                    strokeDasharray="3,3"
+                  />
+                  <text
+                    x={mouseCanvasPt.x}
+                    y={mouseCanvasPt.y + 4}
+                    textAnchor="middle"
+                    fill="#008E9B"
+                    fontSize={12}
+                    fontFamily="Arial, sans-serif"
+                    fontWeight="bold"
+                  >
+                    {activeElement}
+                  </text>
+                </g>
+              )}
+
               {/* Bonds Layer */}
               {bonds.map((b) => {
                 const a1 = atoms.find((a) => a.id === b.from);

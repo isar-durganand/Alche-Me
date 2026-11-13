@@ -151,16 +151,6 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         backgroundColor: backgroundColor || '#000000',
       });
 
-      // 8px Click Tolerance Fix to distinguish quick clicks from rotation drags
-      viewer.closeEnoughForClick = function (t: any) {
-        const r = this.getX(t);
-        const s = this.getY(t);
-        if (r === undefined || s === undefined) return false;
-        const dx = Math.abs(r - this.mouseStartX);
-        const dy = Math.abs(s - this.mouseStartY);
-        return dx <= 8 && dy <= 8;
-      };
-
       viewerRef.current = viewer;
     }
 
@@ -320,13 +310,15 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
         }
       }
 
-      // 7. Interactive Atom Selection Callback
-      model.setClickable({}, true, (clickedAtom: any) => {
-        soundEngine.playElementPip(clickedAtom.atomic_number || 12);
-        if (clickedAtom && typeof clickedAtom.index === 'number') {
-          onAtomSelectRef.current(clickedAtom.index);
-        }
-      });
+      // 7. Interactive Atom Selection Callback: Only attach clickable listeners in Angle Measurement mode
+      if (measurementMode === 'angle') {
+        model.setClickable({}, true, (clickedAtom: any) => {
+          soundEngine.playElementPip(clickedAtom.atomic_number || 12);
+          if (clickedAtom && typeof clickedAtom.index === 'number') {
+            onAtomSelectRef.current(clickedAtom.index);
+          }
+        });
+      }
 
       // 8. Auto-Center ONLY on initial mount or molecule preset change, NEVER while actively drawing
       const currentPresetKey = `${compoundName || formula || ''}`;
@@ -347,7 +339,8 @@ export const MoleculeViewer3D: React.FC<MoleculeViewer3DProps> = ({
     displayStyle,
     surfaceStyle, 
     showLabels, 
-    selectedAtomIndices, 
+    selectedAtomIndices,
+    measurementMode,
     orbitalType, 
     orbitalIsoval, 
     orbitalOpacity, 

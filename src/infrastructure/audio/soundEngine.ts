@@ -305,6 +305,108 @@ class SoundEngine {
       // Ignored
     }
   }
+
+  /**
+   * Tactile liquid droplet "plink / bloop" sound when indicator drops or burette drops fall.
+   */
+  public playDroplet(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      // Rapid upward pitch sweep creates the classic resonant liquid drop bloop
+      const baseFreq = 750 + Math.random() * 150;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 2.1, now + 0.045);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.9, now + 0.09);
+
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.11);
+    } catch {
+      // Ignored
+    }
+  }
+
+  /**
+   * Soft liquid pour / trickle sound for pipetting and cylinder addition.
+   */
+  public playLiquidPour(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const bufferSize = Math.floor(ctx.sampleRate * 0.25);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(800, now);
+      filter.frequency.linearRampToValueAtTime(1400, now + 0.12);
+      filter.frequency.linearRampToValueAtTime(600, now + 0.25);
+      filter.Q.value = 4.5;
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      noise.start(now);
+      noise.stop(now + 0.25);
+    } catch {
+      // Ignored
+    }
+  }
+
+  /**
+   * Precision click for laboratory stopcock / valve rotation.
+   */
+  public playStopcockClick(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(950, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.035);
+
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.045);
+    } catch {
+      // Ignored
+    }
+  }
 }
 
 export const soundEngine = new SoundEngine();

@@ -60,8 +60,9 @@ export const HubScreen: React.FC<HubScreenProps> = ({ onNavigate }) => {
               <span>OFFICIAL 8-WORLD CHEMISTRY CURRICULUM</span>
             </div>
             
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-montserrat font-extrabold tracking-tight text-[#0B1F2A] leading-tight">
-              Welcome back, <span className="text-[#00C2D1]">{profile.displayName}!</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-montserrat font-extrabold tracking-tight text-[#0B1F2A] leading-tight flex items-center gap-3 flex-wrap">
+              <span className="text-4xl sm:text-5xl">{profile.avatar || '🧪'}</span>
+              <span>Welcome back, <span className="text-[#00C2D1]">{profile.displayName}!</span></span>
             </h1>
             
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">

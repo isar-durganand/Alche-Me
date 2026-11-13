@@ -10,9 +10,31 @@ import { SettingsScreen } from './features/settings/SettingsScreen';
 import { WorldSchema } from './domain/types/curriculum';
 
 export const App: React.FC = () => {
-  const [currentRoute, setCurrentRoute] = useState<NavRoute>('hub');
+  const getInitialRoute = (): NavRoute => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash.replace('#', '') as NavRoute;
+      if (['hub', 'worlds', 'periodic-table', 'virtual-lab', 'molecule-studio', 'settings'].includes(hash)) {
+        return hash;
+      }
+    }
+    return 'hub';
+  };
+
+  const [currentRoute, setCurrentRoute] = useState<NavRoute>(getInitialRoute);
   const [selectedWorld, setSelectedWorld] = useState<WorldSchema | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+
+  // Sync hash changes
+  React.useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '') as NavRoute;
+      if (['hub', 'worlds', 'periodic-table', 'virtual-lab', 'molecule-studio', 'settings'].includes(hash)) {
+        setCurrentRoute(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   const handleSelectWorld = (world: WorldSchema) => {
     setSelectedWorld(world);
@@ -25,6 +47,9 @@ export const App: React.FC = () => {
   const handleNavigate = (route: NavRoute) => {
     setSelectedWorld(null);
     setCurrentRoute(route);
+    if (typeof window !== 'undefined') {
+      window.location.hash = route;
+    }
   };
 
   const renderScreen = () => {
